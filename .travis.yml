@@ -1,0 +1,10 @@
+language: ruby
+rvm:
+  - 1.9.2
+before_script:
+  - rake db:test:prepare
+script:
+  - rake cucumber
+  - rake spec
+  
+  
