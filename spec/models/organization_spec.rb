@@ -14,7 +14,6 @@ describe Organization do
   end
 
   it 'must have search by keyword' do
-    debugger
     Organization.should respond_to(:search_by_keyword)
   end
 
