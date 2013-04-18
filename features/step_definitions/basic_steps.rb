@@ -136,6 +136,13 @@ Given /^I sign in as "(.*?)" with password "(.*?)"$/ do |email, password|
   click_button "Sign in"
 end
 
+Given /^I sign up as "(.*?)" with password "(.*?)" and password confirmation "(.*?)"$/ do |email, password,password_confirmation|
+  fill_in "Email" , :with => email
+  fill_in "charity_worker_password" , :with => password
+  fill_in "charity_worker_password_confirmation" , :with => password_confirmation
+  click_button "Sign up"
+end
+
 Given /^the following users are registered:$/ do |charity_workers_table|
   charity_workers_table.hashes.each do |charity_worker|
     CharityWorker.create! charity_worker
@@ -144,6 +151,14 @@ end
 
 Then /^I should be on the sign in page$/ do
   current_path.should == new_charity_worker_session_path
+end
+
+Then /^I should be on the sign up page$/ do
+  current_path.should == new_charity_worker_registration_path
+end
+
+Then /^I should be on the charity workers page$/ do
+  current_path.should == charity_workers_path
 end
 
 When /^I edit the charity address to be "(.*?)"$/ do |address|
