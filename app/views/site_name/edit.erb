@@ -1,0 +1,5 @@
+<%= form_tag("/site_name/edit", :method => "post") do %>
+    <%= label_tag(:q, "Site Name:") %>
+    <%= text_field_tag(:site_name) %>
+    <%= submit_tag("Change") %>
+<% end %>

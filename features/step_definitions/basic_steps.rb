@@ -13,6 +13,11 @@ Given /^I press "(.*?)"$/ do |button|
   click_button(button)
 end
 
+Then /^I should see the donation_info URL for "(.*?)"$/ do |name1|
+  org1 = Organization.find_by_name(name1)
+  page.should have_link "Donate to #{org1.name} now!", :href => org1.donation_info
+end
+
 When /^I search for "(.*?)"$/ do |text|
   fill_in 'q', with: text
   click_button 'Search'
@@ -22,12 +27,6 @@ Given /^I fill in the new charity page validly$/ do
   stub_request_with_address("64 pinner road")
   fill_in 'organization_address', :with => '64 pinner road'
   fill_in 'organization_name', :with => 'Friendly charity'
-end
-
-
-Then /^I should see the donation_info URL for "(.*?)"$/ do |name1|
-  org1 = Organization.find_by_name(name1)
-  page.should have_link "Donate to #{org1.name} now!", :href => org1.donation_info
 end
 
 Then /^I should not see the donation_info URL for "(.*?)"$/ do |name1|
@@ -113,14 +112,6 @@ def check_contact_details(name)
   org = Organization.find_by_name(name)
   page.should have_link name, :href => organization_path(org.id)
   page.should have_content org.description.truncate(128,:omission=>' ...')
-end
-
-Then /^I should be on the sign up page$/ do
-  current_path.should == new_charity_worker_registration_path
-end
-
-Then /^I should be on the charity workers page$/ do
-  current_path.should == charity_workers_path
 end
 
 When /^I fill in "(.*?)" with "(.*?)"$/ do |field, value|

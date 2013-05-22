@@ -5,6 +5,7 @@ end
 Then /^I should be on the home page$/ do
   current_path.should == root_path()
 end
+
 Given /^I am on the charity search page$/ do
   visit organizations_search_path
 end
@@ -30,4 +31,16 @@ end
 Given /^I am on the edit charity page for "(.*?)"$/ do |name1|
   org1 = Organization.find_by_name(name1)
   visit edit_organization_path org1.id
+end
+
+Given /^I am on the change site name page$/ do
+  visit site_name_edit_path
+end
+
+Then /^I should be on the sign up page$/ do
+  current_path.should == new_charity_worker_registration_path
+end
+
+Then /^I should be on the charity workers page$/ do
+  current_path.should == charity_workers_path
 end
