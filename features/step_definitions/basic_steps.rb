@@ -126,3 +126,12 @@ end
 When /^I fill in "(.*?)" with "(.*?)"$/ do |field, value|
   fill_in(field, :with => value)
 end
+
+Then(/^Only (\d+) organizations should be displayed$/) do |arg|
+  step %Q{Table with id organizations should have #{arg} rows}
+end
+
+#Make this step reusable
+Then(/^Table with id (\w+) should have (\d+) rows$/) do |table_id, rows|
+  page.should have_css("table\##{table_id} tr", count: rows)
+end
