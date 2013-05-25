@@ -4,9 +4,12 @@ Feature: A member of public can choose the page with organizations to be display
   I want to be able to select a page with organizations
   Tracker story ID: 50078927
 
-Scenario: Only first 10 organizations are displayed
-  Given I am on the charity search page
-  Then Only 10 organizations should be displayed
+Background: a few tens of organizations exist in database
+  Given 34 organizations exist
+
+#Scenario: Only first 10 organizations are displayed
+#  Given I am on the charity search page
+#  Then Only 10 organizations should be displayed
 
 #Scenario: Another 10 organizations are displayed
 #  Given I am on the charity search page

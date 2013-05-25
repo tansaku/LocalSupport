@@ -135,3 +135,7 @@ end
 Then(/^Table with id (\w+) should have (\d+) rows$/) do |table_id, rows|
   page.should have_css("table\##{table_id} tr", count: rows)
 end
+
+Given(/^(\d+) organizations exist$/) do |arg|
+  pending
+end
