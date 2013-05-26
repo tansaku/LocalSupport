@@ -1,4 +1,5 @@
 require 'csv'
+require 'logging'
 
 class Organization < ActiveRecord::Base
   acts_as_gmappable :check_process => false
@@ -64,7 +65,7 @@ class Organization < ActiveRecord::Base
     org.telephone = row[@@COLUMN_MAPPINGS[:telephone]]
 
     org.save! validate: validate
-
+    logger.info "#{org.inspect} has been imported"
     org
   end
 
@@ -76,7 +77,11 @@ class Organization < ActiveRecord::Base
         break
       end
       count += 1
-      self.create_from_array(row, validate)
+      begin
+        self.create_from_array(row, validate)
+      rescue CSV::MalformedCSVError => e
+        logger.error "The error has occurred while importing record: #{row.inspect}: #{e.message}"
+      end
     end
   end
 

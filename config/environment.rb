@@ -1,5 +1,7 @@
 # Load the rails application
 require File.expand_path('../application', __FILE__)
+# Logging
+require File.join(File.dirname(__FILE__), 'logging')
 
 # Initialize the rails application
 LocalSupport::Application.initialize!
@@ -13,3 +15,5 @@ ActionMailer::Base.smtp_settings = {
   :domain         => 'heroku.com',
   :enable_starttls_auto => true
 }
+
+
