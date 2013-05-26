@@ -41,7 +41,7 @@ describe OrganizationsController do
       assigns(:json).should eq("[]")
     end
 
-    context 'organizations are paged' do
+    context 'organizations are paged, NO consequent calls' do
 
       before(:each) do
         @orgs = []
@@ -85,206 +85,182 @@ describe OrganizationsController do
         expect(assigns(:organizations)).to eq(expected)
       end
 
-      it 'should return page properly if consequent call was made ' do
-        page_size = 5
-        expected = @orgs[0...(page_size*1)]
-        Organization.stub(:all) { @orgs }
-        get :index, page_size: page_size
-        expect(assigns(:organizations)).to eq(expected)
-
-        page_size = 10
-        expected = @orgs[5...15]
-        Organization.stub(:all) { @orgs }
-        get :index, page: 3, page_size: page_size
-        expect(assigns(:organizations)).to eq(expected)
-      end
-
-      it 'should show the last organization on the last page' do
-        page_size = 20
-        expected = @orgs[0...(page_size*1)]
-        Organization.stub(:all) { @orgs }
-        get :index, page_size: page_size
-        expect(assigns(:organizations)).to eq(expected)
-
-        page_size = 5
-        expected = @orgs[20...25]
-        Organization.stub(:all) { @orgs }
-        get :index, page: 3, page_size: page_size
-        expect(assigns(:organizations)).to eq(expected)
-      end
-    end
   end
+  context 'organizations are paged, WITH consequent calls' do
 
-  describe "GET show" do
-    it "assigns the requested organization as @organization" do
-      Organization.stub(:find).with("37") { mock_organization }
-      get :show, :id => "37"
+  end
+end
+
+describe "GET show" do
+  it "assigns the requested organization as @organization" do
+    Organization.stub(:find).with("37") { mock_organization }
+    get :show, :id => "37"
+    assigns(:organization).should be(mock_organization)
+  end
+end
+
+describe "GET new" do
+  context "while signed in" do
+    before(:each) do
+      @admin = FactoryGirl.create(:charity_worker)
+      sign_in :charity_worker, @admin
+    end
+    it "assigns a new organization as @organization" do
+      Organization.stub(:new) { mock_organization }
+      get :new
       assigns(:organization).should be(mock_organization)
     end
   end
-
-  describe "GET new" do
-    context "while signed in" do
-      before(:each) do
-        @admin = FactoryGirl.create(:charity_worker)
-        sign_in :charity_worker, @admin
-      end
-      it "assigns a new organization as @organization" do
-        Organization.stub(:new) { mock_organization }
-        get :new
-        assigns(:organization).should be(mock_organization)
-      end
-    end
-    context "while not signed in" do
-      it "redirects to sign-in" do
-        get :new
-        expect(response).to redirect_to new_charity_worker_session_path
-      end
+  context "while not signed in" do
+    it "redirects to sign-in" do
+      get :new
+      expect(response).to redirect_to new_charity_worker_session_path
     end
   end
+end
 
-  describe "GET edit" do
-    context "while signed in" do
-      before(:each) do
-        @admin = FactoryGirl.create(:charity_worker)
-        sign_in :charity_worker, @admin
-      end
-      it "assigns the requested organization as @organization" do
-        Organization.stub(:find).with("37") { mock_organization }
-        get :edit, :id => "37"
-        assigns(:organization).should be(mock_organization)
-      end
+describe "GET edit" do
+  context "while signed in" do
+    before(:each) do
+      @admin = FactoryGirl.create(:charity_worker)
+      sign_in :charity_worker, @admin
     end
-    #TODO: way to dry out these redirect specs?
-    context "while not signed in" do
-      it "redirects to sign-in" do
-        get :edit, :id => 37
-        expect(response).to redirect_to new_charity_worker_session_path
-      end
+    it "assigns the requested organization as @organization" do
+      Organization.stub(:find).with("37") { mock_organization }
+      get :edit, :id => "37"
+      assigns(:organization).should be(mock_organization)
     end
   end
-
-  describe "POST create" do
-    context "while signed in" do
-      before(:each) do
-        @admin = FactoryGirl.create(:charity_worker)
-        sign_in :charity_worker, @admin
-      end
-      describe "with valid params" do
-        it "assigns a newly created organization as @organization" do
-          Organization.stub(:new).with({'these' => 'params'}) { mock_organization(:save => true) }
-          post :create, :organization => {'these' => 'params'}
-          assigns(:organization).should be(mock_organization)
-        end
-
-        it "redirects to the created organization" do
-          Organization.stub(:new) { mock_organization(:save => true) }
-          post :create, :organization => {}
-          response.should redirect_to(organization_url(mock_organization))
-        end
-      end
-
-      describe "with invalid params" do
-        it "assigns a newly created but unsaved organization as @organization" do
-          Organization.stub(:new).with({'these' => 'params'}) { mock_organization(:save => false) }
-          post :create, :organization => {'these' => 'params'}
-          assigns(:organization).should be(mock_organization)
-        end
-
-        it "re-renders the 'new' template" do
-          Organization.stub(:new) { mock_organization(:save => false) }
-          post :create, :organization => {}
-          response.should render_template("new")
-        end
-      end
+  #TODO: way to dry out these redirect specs?
+  context "while not signed in" do
+    it "redirects to sign-in" do
+      get :edit, :id => 37
+      expect(response).to redirect_to new_charity_worker_session_path
     end
-    context "while not signed in" do
-      it "redirects to sign-in" do
+  end
+end
+
+describe "POST create" do
+  context "while signed in" do
+    before(:each) do
+      @admin = FactoryGirl.create(:charity_worker)
+      sign_in :charity_worker, @admin
+    end
+    describe "with valid params" do
+      it "assigns a newly created organization as @organization" do
         Organization.stub(:new).with({'these' => 'params'}) { mock_organization(:save => true) }
         post :create, :organization => {'these' => 'params'}
-        expect(response).to redirect_to new_charity_worker_session_path
+        assigns(:organization).should be(mock_organization)
+      end
+
+      it "redirects to the created organization" do
+        Organization.stub(:new) { mock_organization(:save => true) }
+        post :create, :organization => {}
+        response.should redirect_to(organization_url(mock_organization))
+      end
+    end
+
+    describe "with invalid params" do
+      it "assigns a newly created but unsaved organization as @organization" do
+        Organization.stub(:new).with({'these' => 'params'}) { mock_organization(:save => false) }
+        post :create, :organization => {'these' => 'params'}
+        assigns(:organization).should be(mock_organization)
+      end
+
+      it "re-renders the 'new' template" do
+        Organization.stub(:new) { mock_organization(:save => false) }
+        post :create, :organization => {}
+        response.should render_template("new")
       end
     end
   end
-
-  describe "PUT update" do
-    context "while signed in" do
-      before(:each) do
-        @admin = FactoryGirl.create(:charity_worker)
-        sign_in :charity_worker, @admin
-      end
-      describe "with valid params" do
-        it "updates the requested organization" do
-          Organization.should_receive(:find).with("37") { mock_organization }
-          mock_organization.should_receive(:update_attributes).with({'these' => 'params'})
-          put :update, :id => "37", :organization => {'these' => 'params'}
-        end
-
-        it "updates donation_info url" do
-          Organization.should_receive(:find).with("37") { mock_organization }
-          mock_organization.should_receive(:update_attributes).with({'donation_info' => 'http://www.friendly.com/donate'})
-          put :update, :id => "37", :organization => {'donation_info' => 'http://www.friendly.com/donate'}
-        end
-
-        it "assigns the requested organization as @organization" do
-          Organization.stub(:find) { mock_organization(:update_attributes => true) }
-          put :update, :id => "1"
-          assigns(:organization).should be(mock_organization)
-        end
-
-        it "redirects to the organization" do
-          Organization.stub(:find) { mock_organization(:update_attributes => true) }
-          put :update, :id => "1"
-          response.should redirect_to(organization_url(mock_organization))
-        end
-      end
-
-      describe "with invalid params" do
-        it "assigns the organization as @organization" do
-          Organization.stub(:find) { mock_organization(:update_attributes => false) }
-          put :update, :id => "1"
-          assigns(:organization).should be(mock_organization)
-        end
-
-        it "re-renders the 'edit' template" do
-          Organization.stub(:find) { mock_organization(:update_attributes => false) }
-          put :update, :id => "1"
-          response.should render_template("edit")
-        end
-      end
-    end
-    context "while not signed in" do
-      it "redirects to sign-in" do
-        put :update, :id => "1", :organization => {'these' => 'params'}
-        expect(response).to redirect_to new_charity_worker_session_path
-      end
+  context "while not signed in" do
+    it "redirects to sign-in" do
+      Organization.stub(:new).with({'these' => 'params'}) { mock_organization(:save => true) }
+      post :create, :organization => {'these' => 'params'}
+      expect(response).to redirect_to new_charity_worker_session_path
     end
   end
+end
 
-  describe "DELETE destroy" do
-    context "while signed in" do
-      before(:each) do
-        @admin = FactoryGirl.create(:charity_worker)
-        sign_in :charity_worker, @admin
-      end
-      it "destroys the requested organization" do
+describe "PUT update" do
+  context "while signed in" do
+    before(:each) do
+      @admin = FactoryGirl.create(:charity_worker)
+      sign_in :charity_worker, @admin
+    end
+    describe "with valid params" do
+      it "updates the requested organization" do
         Organization.should_receive(:find).with("37") { mock_organization }
-        mock_organization.should_receive(:destroy)
-        delete :destroy, :id => "37"
+        mock_organization.should_receive(:update_attributes).with({'these' => 'params'})
+        put :update, :id => "37", :organization => {'these' => 'params'}
       end
 
-      it "redirects to the organizations list" do
-        Organization.stub(:find) { mock_organization }
-        delete :destroy, :id => "1"
-        response.should redirect_to(organizations_url)
+      it "updates donation_info url" do
+        Organization.should_receive(:find).with("37") { mock_organization }
+        mock_organization.should_receive(:update_attributes).with({'donation_info' => 'http://www.friendly.com/donate'})
+        put :update, :id => "37", :organization => {'donation_info' => 'http://www.friendly.com/donate'}
+      end
+
+      it "assigns the requested organization as @organization" do
+        Organization.stub(:find) { mock_organization(:update_attributes => true) }
+        put :update, :id => "1"
+        assigns(:organization).should be(mock_organization)
+      end
+
+      it "redirects to the organization" do
+        Organization.stub(:find) { mock_organization(:update_attributes => true) }
+        put :update, :id => "1"
+        response.should redirect_to(organization_url(mock_organization))
       end
     end
-    context "while not signed in" do
-      it "redirects to sign-in" do
-        delete :destroy, :id => "37"
-        expect(response).to redirect_to new_charity_worker_session_path
+
+    describe "with invalid params" do
+      it "assigns the organization as @organization" do
+        Organization.stub(:find) { mock_organization(:update_attributes => false) }
+        put :update, :id => "1"
+        assigns(:organization).should be(mock_organization)
+      end
+
+      it "re-renders the 'edit' template" do
+        Organization.stub(:find) { mock_organization(:update_attributes => false) }
+        put :update, :id => "1"
+        response.should render_template("edit")
       end
     end
   end
+  context "while not signed in" do
+    it "redirects to sign-in" do
+      put :update, :id => "1", :organization => {'these' => 'params'}
+      expect(response).to redirect_to new_charity_worker_session_path
+    end
+  end
+end
+
+describe "DELETE destroy" do
+  context "while signed in" do
+    before(:each) do
+      @admin = FactoryGirl.create(:charity_worker)
+      sign_in :charity_worker, @admin
+    end
+    it "destroys the requested organization" do
+      Organization.should_receive(:find).with("37") { mock_organization }
+      mock_organization.should_receive(:destroy)
+      delete :destroy, :id => "37"
+    end
+
+    it "redirects to the organizations list" do
+      Organization.stub(:find) { mock_organization }
+      delete :destroy, :id => "1"
+      response.should redirect_to(organizations_url)
+    end
+  end
+  context "while not signed in" do
+    it "redirects to sign-in" do
+      delete :destroy, :id => "37"
+      expect(response).to redirect_to new_charity_worker_session_path
+    end
+  end
+end
 
 end

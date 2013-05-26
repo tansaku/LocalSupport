@@ -20,15 +20,11 @@ class OrganizationsController < ApplicationController
   def index
     page = params[:page] || '1'
     page_size = params[:page_size] || @@PAGE_SIZE
-    beg_val = flash[:begin]
-    if beg_val
-      end_val = page_size.to_i + beg_val
-    else
-      end_val = page.to_i * page_size.to_i
-      beg_val = end_val - page_size.to_i
-    end
+
+    end_val = page.to_i * page_size.to_i
+    beg_val = end_val - page_size.to_i
+
     @organizations = Organization.all[beg_val...end_val]
-    flash[:begin] = end_val
     @json = @organizations.to_gmaps4rails
     respond_to do |format|
       format.html # index.html.erb
