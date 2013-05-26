@@ -2,21 +2,33 @@ class OrganizationsController < ApplicationController
   # GET /organizations/search
   # GET /organizations/search.json
   before_filter :authenticate_charity_worker!, :except => [:search, :index, :show]
+
   def search
     # should this be a model method with a model spec around it ...?
 
     @organizations = Organization.search_by_keyword(params[:q])
     @json = @organizations.to_gmaps4rails
     respond_to do |format|
-      format.html { render :template =>'organizations/index'}
+      format.html { render :template => 'organizations/index' }
       format.json { render json: @organizations }
     end
   end
 
+  @@PAGE_SIZE = 10
   # GET /organizations
   # GET /organizations.json
   def index
-    @organizations = Organization.all
+    page = params[:page] || '1'
+    page_size = params[:page_size] || @@PAGE_SIZE
+    beg_val = flash[:begin]
+    if beg_val
+      end_val = page_size.to_i + beg_val
+    else
+      end_val = page.to_i * page_size.to_i
+      beg_val = end_val - page_size.to_i
+    end
+    @organizations = Organization.all[beg_val...end_val]
+    flash[:begin] = end_val
     @json = @organizations.to_gmaps4rails
     respond_to do |format|
       format.html # index.html.erb

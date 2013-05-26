@@ -137,5 +137,13 @@ Then(/^Table with id (\w+) should have (\d+) rows$/) do |table_id, rows|
 end
 
 Given(/^(\d+) organizations exist$/) do |arg|
-  pending
+  Organization.import_addresses 'db/data.csv', 100, false
+end
+
+When(/^I click to display 2nd page$/) do
+  click_link('2_page')
+end
+
+Then(/^Another (\d+) organizations should be displayed$/) do |arg|
+  step %Q{Table with id organizations should have #{arg} rows}
 end

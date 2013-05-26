@@ -3,8 +3,11 @@ require 'spec_helper'
 describe Organization do
 
   before do
-    FactoryGirl.factories.clear
-    FactoryGirl.find_definitions
+    #TODO: Pavel: Is there any need to reload factories definitions each time?
+    # I did so cuz here was FactoryGirl.factories.clear and FactoryGirl.find_definitions
+    # And it seems .clear method didn't worked and I was getting FactoryGirl::DuplicateDefinitionError:
+    # Sequence already registered: name. Nevertheless specs r green if the next line is removed.
+    FactoryGirl.reload
 
     @org1 = FactoryGirl.build(:organization, :name => 'Harrow Bereavement Counselling', :description => 'Bereavement Counselling', :address => '64 pinner road', :postcode => 'HA1 3TE', :donation_info => 'www.harrow-bereavment.co.uk/donate')
     Gmaps4rails.should_receive(:geocode)
@@ -105,8 +108,8 @@ describe Organization do
       @headers = 'Charity Number,Activities,Contact Name,Contact Address,website,Contact Telephone,date registered,date removed,accounts date,spending,income,company number,OpenlyLocalURL,twitter account name,facebook account name,youtube account name,feed url,Charity Classification,signed up for 1010,last checked,created at,updated at,Removed?'.split(',')
       fields = CSV.parse('HARROW BAPTIST CHURCH,1129832,NO INFORMATION RECORDED,MR JOHN ROSS NEWBY,"HARROW BAPTIST CHURCH, COLLEGE ROAD, HARROW, HA1 1BA",http://www.harrow-baptist.org.uk,020 8863 7837,2009-05-27,,,,,,http://OpenlyLocal.com/charities/57879-HARROW-BAPTIST-CHURCH,,,,,"207,305,108,302,306",false,2010-09-20T21:38:52+01:00,2010-08-22T22:19:07+01:00,2012-04-15T11:22:12+01:00,*****')
       lambda{
-        org = create_organization(fields)
-      }.should raise_error
+        create_organization(fields)
+      }.should raise_error CSV::MalformedCSVError, "No expected column with name Title in CSV file"
     end
 
     it 'should save Organization from file without running validations' do

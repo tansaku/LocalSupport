@@ -41,7 +41,7 @@ class Organization < ActiveRecord::Base
 
   #Edit this if CSV 'schema' changes
   #value is the name of a column in csv file
-  @@column_mappings = {
+  @@COLUMN_MAPPINGS = {
       name: 'Title',
       address: 'Contact Address',
       description: 'Activities',
@@ -52,23 +52,23 @@ class Organization < ActiveRecord::Base
 
   def self.create_from_array(row, validate = true)
     check_columns_in(row)
-    return nil if row[@@column_mappings[:date_removed]]
-    address = self.parse_address(row[@@column_mappings[:address]])
+    return nil if row[@@COLUMN_MAPPINGS[:date_removed]]
+    address = self.parse_address(row[@@COLUMN_MAPPINGS[:address]])
 
     org = Organization.new
-    org.name = row[@@column_mappings[:name]].to_s.humanized_all_first_capitals
-    org.description = self.humanize_description(row[@@column_mappings[:description]])
+    org.name = row[@@COLUMN_MAPPINGS[:name]].to_s.humanized_all_first_capitals
+    org.description = self.humanize_description(row[@@COLUMN_MAPPINGS[:description]])
     org.address = address[:address].humanized_all_first_capitals
     org.postcode = address[:postcode]
-    org.website = row[@@column_mappings[:website]]
-    org.telephone = row[@@column_mappings[:telephone]]
+    org.website = row[@@COLUMN_MAPPINGS[:website]]
+    org.telephone = row[@@COLUMN_MAPPINGS[:telephone]]
 
     org.save! validate: validate
 
     org
   end
 
-  def self.import_addresses(filename, limit)
+  def self.import_addresses(filename, limit, validate = true)
     csv_text = File.open(filename, 'r:ISO-8859-1')
     count = 0
     CSV.parse(csv_text, :headers => true).each do |row|
@@ -76,14 +76,14 @@ class Organization < ActiveRecord::Base
         break
       end
       count += 1
-      self.create_from_array(row)
+      self.create_from_array(row, validate)
     end
   end
 
   def self.check_columns_in(row)
-    @@column_mappings.each_value do |column_name|
+    @@COLUMN_MAPPINGS.each_value do |column_name|
       unless row.header?(column_name)
-        raise CSV::MalformedCSVError, 'No expected columns in CSV file'
+        raise CSV::MalformedCSVError, "No expected column with name #{column_name} in CSV file"
       end
     end
   end

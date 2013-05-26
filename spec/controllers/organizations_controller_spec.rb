@@ -2,22 +2,22 @@ require 'spec_helper'
 
 describe OrganizationsController do
   before :suite do
-    FactoryGirl.factories.clear
-    FactoryGirl.find_definitions
+    FactoryGirl.reload
   end
+
   def mock_organization(stubs={})
     (@mock_organization ||= mock_model(Organization).as_null_object).tap do |organization|
       organization.stub(stubs) unless stubs.empty?
     end
   end
-  
+
   describe "GET search" do
     it "searches all organizations as @organizations" do
       result = [mock_organization]
       json='my markers'
       result.should_receive(:to_gmaps4rails).and_return(json)
       Organization.should_receive(:search_by_keyword).with('test').and_return(result)
-      
+
       get :search, :q => 'test'
       response.should render_template 'index'
 
@@ -28,15 +28,90 @@ describe OrganizationsController do
 
 
   describe "GET index" do
-    it "assigns all organizations as @organizations" do
+
+    it 'assigns all organizations as @organizations' do
       mock_array = []
       mock_json = ""
       #this array expectation doesn't work and I don't know why
       #Array.should_receive(:to_gmaps4rails).and_return(mock_json)
       Organization.stub(:all) { mock_array }
       get :index
+
       assigns(:organizations).should eq(mock_array)
       assigns(:json).should eq("[]")
+    end
+
+    context 'organizations are paged' do
+
+      before(:each) do
+        @orgs = []
+        #create 25 organizations
+        25.times do
+          @orgs << FactoryGirl.build(:organization)
+        end
+        @page_size = 10
+      end
+
+      it 'should return 1nd "page" if no params specified with default page size' do
+        page_size = 10
+        expected = @orgs[0...(page_size*1)]
+        Organization.stub(:all) { @orgs }
+        get :index
+        expect(assigns(:organizations)).to eq(expected)
+      end
+
+      it 'should return 2nd "page" of @organizations array with default size of a page' do
+        page_size = 10
+        expected = @orgs[page_size...(page_size*2)]
+        Organization.stub(:all) { @orgs }
+        get :index, page: 2
+        expect(assigns(:organizations)).to eq(expected)
+      end
+
+      it 'should return 2nd "page" of @organizations array with size of a page 5' do
+        page_size = 5
+        expected = @orgs[page_size...(page_size*2)]
+        Organization.stub(:all) { @orgs }
+        get :index, page: 2, page_size: page_size
+        expect(assigns(:organizations)).to eq(expected)
+      end
+
+      #Page shouldn't be full, cuz range is [20..30], but array size is 25
+      it 'should return 3rd "page" of @organizations array with default size of a page' do
+        page_size = 10
+        expected = @orgs[20...(page_size*3)]
+        Organization.stub(:all) { @orgs }
+        get :index, page: 3
+        expect(assigns(:organizations)).to eq(expected)
+      end
+
+      it 'should return page properly if consequent call was made ' do
+        page_size = 5
+        expected = @orgs[0...(page_size*1)]
+        Organization.stub(:all) { @orgs }
+        get :index, page_size: page_size
+        expect(assigns(:organizations)).to eq(expected)
+
+        page_size = 10
+        expected = @orgs[5...15]
+        Organization.stub(:all) { @orgs }
+        get :index, page: 3, page_size: page_size
+        expect(assigns(:organizations)).to eq(expected)
+      end
+
+      it 'should show the last organization on the last page' do
+        page_size = 20
+        expected = @orgs[0...(page_size*1)]
+        Organization.stub(:all) { @orgs }
+        get :index, page_size: page_size
+        expect(assigns(:organizations)).to eq(expected)
+
+        page_size = 5
+        expected = @orgs[20...25]
+        Organization.stub(:all) { @orgs }
+        get :index, page: 3, page_size: page_size
+        expect(assigns(:organizations)).to eq(expected)
+      end
     end
   end
 
@@ -137,16 +212,16 @@ describe OrganizationsController do
       before(:each) do
         @admin = FactoryGirl.create(:charity_worker)
         sign_in :charity_worker, @admin
-       end
+      end
       describe "with valid params" do
         it "updates the requested organization" do
           Organization.should_receive(:find).with("37") { mock_organization }
           mock_organization.should_receive(:update_attributes).with({'these' => 'params'})
           put :update, :id => "37", :organization => {'these' => 'params'}
         end
-      
+
         it "updates donation_info url" do
-          Organization.should_receive(:find).with("37"){mock_organization}
+          Organization.should_receive(:find).with("37") { mock_organization }
           mock_organization.should_receive(:update_attributes).with({'donation_info' => 'http://www.friendly.com/donate'})
           put :update, :id => "37", :organization => {'donation_info' => 'http://www.friendly.com/donate'}
         end
