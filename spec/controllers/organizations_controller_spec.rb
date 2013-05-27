@@ -29,6 +29,15 @@ describe OrganizationsController do
 
   describe "GET index" do
 
+    before(:each) do
+      @orgs = []
+      #create 25 organizations
+      25.times do
+        @orgs << FactoryGirl.build(:organization)
+      end
+      @page_size = 10
+    end
+
     it 'assigns all organizations as @organizations' do
       mock_array = []
       mock_json = ""
@@ -41,16 +50,7 @@ describe OrganizationsController do
       assigns(:json).should eq("[]")
     end
 
-    context 'organizations are paged, NO consequent calls' do
-
-      before(:each) do
-        @orgs = []
-        #create 25 organizations
-        25.times do
-          @orgs << FactoryGirl.build(:organization)
-        end
-        @page_size = 10
-      end
+    context 'organizations are paged, NO consequent calls (NO :last_index or last param is provided)' do
 
       it 'should return 1nd "page" if no params specified with default page size' do
         page_size = 10
@@ -68,7 +68,7 @@ describe OrganizationsController do
         expect(assigns(:organizations)).to eq(expected)
       end
 
-      it 'should return 2nd "page" of @organizations array with size of a page 5' do
+      it 'should return 2nd "page" of @organizations array with custom size of a page 5' do
         page_size = 5
         expected = @orgs[page_size...(page_size*2)]
         Organization.stub(:all) { @orgs }
@@ -85,10 +85,34 @@ describe OrganizationsController do
         expect(assigns(:organizations)).to eq(expected)
       end
 
-  end
-  context 'organizations are paged, WITH consequent calls' do
+    end
+
+  context 'organizations are paged, WITH consequent calls ( OR :last_index param is provided)' do
+
+    it 'should display next page with provided param' do
+      page_size = 5
+      expected = @orgs[11...16]
+      Organization.stub(:all) { @orgs }
+      get :index, page: 'next', page_size: page_size, last_index: 11
+      expect(assigns(:organizations)).to eq(expected)
+    end
+
+    it 'should display next page with consequent call' do
+      page_size = 5
+      expected = @orgs[5...10]
+      Organization.stub(:all) { @orgs }
+      get :index, page: 2, page_size: page_size
+      expect(assigns(:organizations)).to eq(expected)
+
+      page_size = 5
+      expected = @orgs[10...15]
+      Organization.stub(:all) { @orgs }
+      get :index, page: 'next', page_size: page_size
+      expect(assigns(:organizations)).to eq(expected)
+    end
 
   end
+
 end
 
 describe "GET show" do
