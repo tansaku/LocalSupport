@@ -24,7 +24,7 @@ class OrganizationsController < ApplicationController
     offset = (params[:offset]  || '0').to_i
 
     start = Organization.find_by_id(params[:last].to_i) if params[:last]
-    start ||= Organization.maximum('updated_at')
+    start ||= Organization.order('updated_at desc').first
 
     if params[:page] == 'next' || !params[:page]
       @organizations = Organization.get_next(start, offset, size)

@@ -60,7 +60,7 @@ describe OrganizationsController do
       it 'should show prev page' do
         expected = @orgs[5..10]
         Organization.should_receive(:get_prev).with(@orgs[0], 0, 10).and_return(expected)
-        Organization.should_receive(:maximum).with('updated_at').and_return(@orgs[0])
+        Organization.should_receive(:order).with('updated_at desc').and_return([@orgs[0]])
         #Organization.stub(:get_next) { @orgs[5..10] }
         get :index, page: 'prev'
         assigns(:organizations).should eq(expected)
