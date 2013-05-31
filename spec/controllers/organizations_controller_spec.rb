@@ -37,20 +37,11 @@ describe OrganizationsController do
       end
     end
 
-    it 'assigns all organizations as @organizations' do
-      expected = []
-      Organization.should_receive(:get_next).with(0, 0, 10).and_return(expected)
-
-      get :index
-
-      assigns(:organizations).should eq(expected)
-      assigns(:json).should eq("[]")
-    end
-
     context 'params for scrolling/paging are passed' do
       it 'should show next page' do
         expected = @orgs[5..10]
-        Organization.should_receive(:get_next).with(5, 0, 10).and_return(expected)
+        Organization.should_receive(:get_next).with(@orgs[0], 0, 10).and_return(expected)
+        Organization.should_receive(:find_by_id).with(5).and_return(@orgs[0])
         #Organization.stub(:get_next) { @orgs[5..10] }
         get :index, page: 'next', last: 5
         assigns(:organizations).should eq(expected)
@@ -58,17 +49,20 @@ describe OrganizationsController do
 
       it 'should show next page, size and offset are specified' do
         expected = @orgs[5..10]
-        Organization.should_receive(:get_next).with(5, 5, 5).and_return(expected)
+        Organization.should_receive(:get_next).with(@orgs[0], 5, 5).and_return(expected)
+        Organization.should_receive(:find_by_id).with(5).and_return(@orgs[0])
         #Organization.stub(:get_next) { @orgs[5..10] }
         get :index, page: 'next', last: 5, size: 5, offset: 5
         assigns(:organizations).should eq(expected)
       end
 
+      #Also tests absence of params[:last]
       it 'should show prev page' do
         expected = @orgs[5..10]
-        Organization.should_receive(:get_prev).with(777, 0, 10).and_return(expected)
+        Organization.should_receive(:get_prev).with(@orgs[0], 0, 10).and_return(expected)
+        Organization.should_receive(:maximum).with('updated_at').and_return(@orgs[0])
         #Organization.stub(:get_next) { @orgs[5..10] }
-        get :index, page: 'prev', last: 777
+        get :index, page: 'prev'
         assigns(:organizations).should eq(expected)
       end
 

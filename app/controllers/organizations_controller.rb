@@ -18,10 +18,13 @@ class OrganizationsController < ApplicationController
   # GET /organizations
   # GET /organizations.json
   def index
-    #TODO: get start aka record with latest update
-    start = (params[:last]  || '0').to_i
+    #FIXME: This comtrollers method seems to be fat, move logic
+    #to model
     size = (params[:size]  || '10').to_i
     offset = (params[:offset]  || '0').to_i
+
+    start = Organization.find_by_id(params[:last].to_i) if params[:last]
+    start ||= Organization.maximum('updated_at')
 
     if params[:page] == 'next' || !params[:page]
       @organizations = Organization.get_next(start, offset, size)
