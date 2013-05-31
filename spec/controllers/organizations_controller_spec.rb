@@ -35,85 +35,46 @@ describe OrganizationsController do
       25.times do
         @orgs << FactoryGirl.build(:organization)
       end
-      @page_size = 10
     end
 
     it 'assigns all organizations as @organizations' do
-      mock_array = []
-      mock_json = ""
-      #this array expectation doesn't work and I don't know why
-      #Array.should_receive(:to_gmaps4rails).and_return(mock_json)
-      Organization.stub(:all) { mock_array }
+      expected = []
+      Organization.should_receive(:get_next).with(0, 0, 10).and_return(expected)
+
       get :index
 
-      assigns(:organizations).should eq(mock_array)
+      assigns(:organizations).should eq(expected)
       assigns(:json).should eq("[]")
     end
 
-    context 'organizations are paged, NO consequent calls (NO :last_index or last param is provided)' do
-
-      it 'should return 1nd "page" if no params specified with default page size' do
-        page_size = 10
-        expected = @orgs[0...(page_size*1)]
-        Organization.stub(:all) { @orgs }
-        get :index
-        expect(assigns(:organizations)).to eq(expected)
+    context 'params for scrolling/paging are passed' do
+      it 'should show next page' do
+        expected = @orgs[5..10]
+        Organization.should_receive(:get_next).with(5, 0, 10).and_return(expected)
+        #Organization.stub(:get_next) { @orgs[5..10] }
+        get :index, page: 'next', last: 5
+        assigns(:organizations).should eq(expected)
       end
 
-      it 'should return 2nd "page" of @organizations array with default size of a page' do
-        page_size = 10
-        expected = @orgs[page_size...(page_size*2)]
-        Organization.stub(:all) { @orgs }
-        get :index, page: 2
-        expect(assigns(:organizations)).to eq(expected)
+      it 'should show next page, size and offset are specified' do
+        expected = @orgs[5..10]
+        Organization.should_receive(:get_next).with(5, 5, 5).and_return(expected)
+        #Organization.stub(:get_next) { @orgs[5..10] }
+        get :index, page: 'next', last: 5, size: 5, offset: 5
+        assigns(:organizations).should eq(expected)
       end
 
-      it 'should return 2nd "page" of @organizations array with custom size of a page 5' do
-        page_size = 5
-        expected = @orgs[page_size...(page_size*2)]
-        Organization.stub(:all) { @orgs }
-        get :index, page: 2, page_size: page_size
-        expect(assigns(:organizations)).to eq(expected)
+      it 'should show prev page' do
+        expected = @orgs[5..10]
+        Organization.should_receive(:get_prev).with(777, 0, 10).and_return(expected)
+        #Organization.stub(:get_next) { @orgs[5..10] }
+        get :index, page: 'prev', last: 777
+        assigns(:organizations).should eq(expected)
       end
 
-      #Page shouldn't be full, cuz range is [20..30], but array size is 25
-      it 'should return 3rd "page" of @organizations array with default size of a page' do
-        page_size = 10
-        expected = @orgs[20...(page_size*3)]
-        Organization.stub(:all) { @orgs }
-        get :index, page: 3
-        expect(assigns(:organizations)).to eq(expected)
-      end
-
-    end
-
-  context 'organizations are paged, WITH consequent calls ( OR :last_index param is provided)' do
-
-    it 'should display next page with provided param' do
-      page_size = 5
-      expected = @orgs[11...16]
-      Organization.stub(:all) { @orgs }
-      get :index, page: 'next', page_size: page_size, last_index: 11
-      expect(assigns(:organizations)).to eq(expected)
-    end
-
-    it 'should display next page with consequent call' do
-      page_size = 5
-      expected = @orgs[5...10]
-      Organization.stub(:all) { @orgs }
-      get :index, page: 2, page_size: page_size
-      expect(assigns(:organizations)).to eq(expected)
-
-      page_size = 5
-      expected = @orgs[10...15]
-      Organization.stub(:all) { @orgs }
-      get :index, page: 'next', page_size: page_size
-      expect(assigns(:organizations)).to eq(expected)
     end
 
   end
-
-end
 
 describe "GET show" do
   it "assigns the requested organization as @organization" do

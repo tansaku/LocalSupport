@@ -44,11 +44,11 @@ class Organization < ActiveRecord::Base
   #value is the name of a column in csv file
   @@COLUMN_MAPPINGS = {
       name: 'Title',
-      address: 'Contact Address',
-      description: 'Activities',
-      website: 'website',
-      telephone: 'Contact Telephone',
-      date_removed: 'date removed'
+  address: 'Contact Address',
+  description: 'Activities',
+  website: 'website',
+  telephone: 'Contact Telephone',
+  date_removed: 'date removed'
   }
 
   def self.create_from_array(row, validate = true)
@@ -85,6 +85,15 @@ class Organization < ActiveRecord::Base
     end
   end
 
+  def self.get_next(start, offset, size)
+    Organization.where('updated_at < ?', start.updated_at).order('updated_at desc')[offset, size]
+  end
+
+  def self.get_prev(start, offset, size)
+    subset = Organization.where('updated_at > ?', start.updated_at).order('updated_at desc')
+    subset[subset.length - size - offset, size]
+  end
+
   def self.check_columns_in(row)
     @@COLUMN_MAPPINGS.each_value do |column_name|
       unless row.header?(column_name)
@@ -92,6 +101,8 @@ class Organization < ActiveRecord::Base
       end
     end
   end
+
+
 
   private
 

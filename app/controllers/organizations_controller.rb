@@ -18,19 +18,16 @@ class OrganizationsController < ApplicationController
   # GET /organizations
   # GET /organizations.json
   def index
-    page = params[:page] || 1
-    page_size = params[:page_size] || @@PAGE_SIZE
+    #TODO: get start aka record with latest update
+    start = (params[:last]  || '0').to_i
+    size = (params[:size]  || '10').to_i
+    offset = (params[:offset]  || '0').to_i
 
-    if params[:page] == 'next' && (last_index = params[:last_index] || flash[:last])
-      beg_val = last_index.to_i
-      end_val = beg_val + page_size.to_i
-    else
-      end_val = page.to_i * page_size.to_i
-      beg_val = end_val - page_size.to_i
+    if params[:page] == 'next' || !params[:page]
+      @organizations = Organization.get_next(start, offset, size)
+    elsif params[:page] == 'prev'
+      @organizations = Organization.get_prev(start, offset, size)
     end
-
-    @organizations = Organization.all[beg_val...end_val]
-    flash[:last] = end_val
     @json = @organizations.to_gmaps4rails
     respond_to do |format|
       format.html # index.html.erb

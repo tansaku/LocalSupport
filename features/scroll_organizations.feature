@@ -7,9 +7,9 @@ Feature: A member of public can choose the page with organizations to be display
 Background: a few tens of organizations exist in database
   Given 50 organizations exist
 
-#Scenario: Only first 10 organizations are displayed
-#  Given I am on the charity search page
-#  Then Only 10 organizations should be displayed
+Scenario: Only first 10 organizations are displayed
+  Given I am on the charity search page
+  Then Only 10 organizations should be displayed
 
 #Scenario: Another 10 organizations are displayed
 #  Given I am on the charity search page

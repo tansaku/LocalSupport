@@ -133,6 +133,49 @@ describe Organization do
     end
   end
 
+  describe 'fetch data as pages' do
+    before(:each) do
+      Gmaps4rails.should_receive(:geocode).exactly(25).times
+      @orgs = []
+      #create 25 organizations, so overall will be 25 + 3
+      25.times do
+        @orgs << FactoryGirl.create(:organization)
+      end
+    end
+
+    it 'should get :size data starting from :record NO OFFSET' do
+      @orgs = Organization.order('updated_at DESC')
+      start = @orgs[3]
+      offset = 0
+      size = 5
+      expect(@orgs[4..8]).to eq Organization.get_next(start, offset, size)
+    end
+
+    it 'should get :size data starting from :record WITH OFFSET' do
+      @orgs = Organization.order('updated_at DESC')
+      start = @orgs[3]
+      offset = 2
+      size = 5
+      expect(@orgs[6..10]).to eq Organization.get_next(start, offset, size)
+    end
+
+    it 'should get :size data starting from :record BACKWARD NO OFFSET' do
+      @orgs = Organization.order('updated_at DESC')
+      start = @orgs[10]
+      offset = 0
+      size = 5
+      expect(@orgs[5..9]).to eq Organization.get_prev(start, offset, size)
+    end
+
+    it 'should get :size data starting from :record BACKWARD WITH OFFSET' do
+      @orgs = Organization.order('updated_at DESC')
+      start = @orgs[20]
+      offset = 5
+      size = 5
+      expect(@orgs[10..14]).to eq Organization.get_prev(start, offset, size)
+    end
+  end
+
   it 'must have search by keyword' do
     Organization.should respond_to(:search_by_keyword)
   end
