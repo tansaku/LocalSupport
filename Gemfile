@@ -66,6 +66,7 @@ group :test do
   gem 'turn', :require => false
 end
 
+gem 'logging'
 gem 'therubyracer'
 gem 'gmaps4rails'
 #gem 'mongrel'

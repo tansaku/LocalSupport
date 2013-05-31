@@ -1,3 +1,4 @@
+=begin
 require 'spec_helper'
 
 describe "Organizations" do
@@ -7,3 +8,4 @@ describe "Organizations" do
     end
   end
 end
+=end
