@@ -29,14 +29,13 @@ describe OrganizationsController do
 
   describe "GET index" do
     it "assigns all organizations as @organizations" do
-      mock_array = []
-      mock_json = ""
-      #this array expectation doesn't work and I don't know why
-      #Array.should_receive(:to_gmaps4rails).and_return(mock_json)
-      Organization.stub(:all) { mock_array }
+      result = [mock_organization]
+      json='my markers'
+      result.should_receive(:to_gmaps4rails).and_return(json)
+      Organization.should_receive(:order).with('updated_at DESC').and_return(result)
       get :index
-      assigns(:organizations).should eq(mock_array)
-      assigns(:json).should eq("[]")
+      assigns(:organizations).should eq(result)
+      assigns(:json).should eq(json)
     end
   end
 
@@ -146,7 +145,8 @@ describe OrganizationsController do
         end
 
         it "updates donation_info url" do
-          Organization.should_receive(:find).with("37"){mock_organization}
+          mock = mock_organization(:id => 37)
+          Organization.should_receive(:find).with("37"){mock}
           mock_organization.should_receive(:update_attributes).with({'donation_info' => 'http://www.friendly.com/donate'})
           put :update, :id => "37", :organization => {'donation_info' => 'http://www.friendly.com/donate'}
         end
@@ -179,21 +179,43 @@ describe OrganizationsController do
       end
     end
 
-    context "while signed in as normal user" do
+    context "while signed in as normal user belonging to organization" do
       before(:each) do
-        @user = FactoryGirl.create(:charity_worker)
+        #TODO: Is this necessary to push into real database to get the association to take?
+        @user = FactoryGirl.create(:charity_worker_stubbed_organization)
+        @associated_org = @user.organization
         sign_in :charity_worker, @user
       end
       describe "with valid params" do
         it "updates the requested organization" do
-          Organization.should_not_receive(:find).with("37") { mock_organization }
-          mock_organization.should_not_receive(:update_attributes).with({'these' => 'params'})
-          put :update, :id => "37", :organization => {'these' => 'params'}
-          response.should redirect_to(organization_url("37"))
+          Organization.should_receive(:find).with("#{@associated_org.id}"){@associated_org}
+          @associated_org.should_receive(:update_attributes).with({'these' => 'params'})
+          put :update, :id => "#{@associated_org.id}", :organization => {'these' => 'params'}
+        end
+        it "updates donation_info url" do
+          org = @user.organization
+          Organization.should_receive(:find).with("#{@associated_org.id}"){@associated_org}
+         @associated_org.should_receive(:update_attributes).with({'donation_info' => 'http://www.friendly.com/donate'})
+          put :update, :id => "#{@associated_org.id}", :organization => {'donation_info' => 'http://www.friendly.com/donate'}
+        end
+      end
+    end
+
+    context "while signed in as normal user belonging to no organization" do
+      before(:each) do
+        @user = FactoryGirl.create(:charity_worker)
+        @non_associated_org = mock_organization
+        sign_in :charity_worker, @user
+      end
+      describe "with valid params" do
+        it "does not update the requested organization" do
+          Organization.should_not_receive(:find).with("#{@non_associated_org.id}")
+          @non_associated_org.should_not_receive(:update_attributes)
+          put :update, :id => "#{@non_associated_org.id}", :organization => {'these' => 'params'}
+          response.should redirect_to(organization_url("#{@non_associated_org.id}"))
           expect(flash[:notice]).to eq("You don't have permission")
         end
       end
-
 
     end
     context "while not signed in" do

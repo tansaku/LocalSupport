@@ -16,7 +16,8 @@ class OrganizationsController < ApplicationController
   # GET /organizations
   # GET /organizations.json
   def index
-    @organizations = Organization.all
+#@organizations = Organization.all
+    @organizations = Organization.order("updated_at DESC")
     @json = @organizations.to_gmaps4rails
     respond_to do |format|
       format.html # index.html.erb
@@ -70,7 +71,8 @@ class OrganizationsController < ApplicationController
   # PUT /organizations/1
   # PUT /organizations/1.json
   def update
-    unless current_charity_worker.try(:admin?)
+    #TODO: Refactor flow and/or into seperate filter.  This is getting smelly and defensive
+    unless current_charity_worker.try(:admin?) ||(current_charity_worker.organization && current_charity_worker.organization.id.to_s == params[:id])
       flash[:notice] = "You don't have permission"
       redirect_to organization_path(params[:id]) and return false
     end
