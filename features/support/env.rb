@@ -7,7 +7,8 @@
 require 'cucumber/rails'
 require "rack_session_access/capybara"
 require 'ruby-debug'
-require 'selenium/webdriver'
+require 'watir-webdriver'
+require 'headless'
 
 # Capybara defaults to XPath selectors rather than Webrat's default of CSS3. In
 # order to ease the transition to Capybara we set the default here. If you'd
@@ -15,9 +16,10 @@ require 'selenium/webdriver'
 # steps to use the XPath syntax.
 Capybara.default_selector = :css
 
-Capybara.javascript_driver = :webkit
-
 WebMock.allow_net_connect!
+
+headless = Headless.new
+headless.start
 
 # By default, any exception happening in your Rails application will bubble up
 # to Cucumber so that your scenario will fail. This is a different from how 

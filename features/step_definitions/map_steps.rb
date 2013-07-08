@@ -42,7 +42,7 @@ end
 Then /^I should see search results for "(.*?)" in the map$/ do |search_terms|
   orgs = Organization.search_by_keyword(search_terms)
   orgs.each do |org|
-    matches = page.html.match %Q<{\\"description\\":\\".*#{org.name}</a>\\",\\"lat\\":((?:-|)\\d+\.\\d+),\\"lng\\":((?:-|)\\d+\.\\d+)}>
+    matches = page.html.match %Q<{\\"description\\":\\".*#{org.name}&lt;/a&gt;\\",\\"lat\\":((?:-|)\\d+\.\\d+),\\"lng\\":((?:-|)\\d+\.\\d+)}>
     expect(matches).not_to be_nil
   end
 end
