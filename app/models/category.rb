@@ -15,4 +15,8 @@ class Category < ActiveRecord::Base
                        :charity_commission_name => row[@@column_mappings[:cc_name]].strip
     end
   end
+
+  def self.first_charities
+    where('charity_commission_id < 199').order('name ASC')
+  end
 end

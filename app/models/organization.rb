@@ -64,7 +64,9 @@ class Organization < ActiveRecord::Base
       date_removed: 'date removed',
       cc_id: 'Charity Classification'
   }
-
+  def self.column_mappings
+    @@column_mappings
+  end
   def self.import_categories_from_array(row)
     check_columns_in(row)
     org = Organization.find_by_name(row[@@column_mappings[:name]].to_s.humanized_all_first_capitals)
@@ -161,6 +163,10 @@ class Organization < ActiveRecord::Base
         raise CSV::MalformedCSVError, "No expected column with name #{column_name} in CSV file"
       end
     end
+  end
+
+  def self.recent
+    order("updated_at DESC")
   end
 
   private

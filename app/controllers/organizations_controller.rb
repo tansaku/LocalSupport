@@ -1,41 +1,19 @@
 class OrganizationsController < ApplicationController
-  # GET /organizations/search
-  # GET /organizations/search.json
   before_filter :authenticate_user!, :except => [:search, :index, :show]
+
   def search
-    # should this be a model method with a model spec around it ...?
-
-    @query_term = params[:q]
-    @category_id = params["category"]["id"] if !params["category"].nil? && !params["category"]["id"].blank?
-    @category = Category.find_by_id(@category_id) unless @category_id.blank?
-
-    @organizations = Organization.search_by_keyword(@query_term).filter_by_category(@category_id)
-
-    flash.now[:alert] = "Sorry, it seems we don't quite have what you are looking for." if @organizations.empty?
-    @json = gmap4rails_with_popup_partial(@organizations,'popup')
-    @category_options = Category.where('charity_commission_id < 199').order('name ASC').collect {|c| [ c.name, c.id ] }
-    respond_to do |format|
-      format.html { render :template =>'organizations/index'}
-      format.json { render json:  @organizations }
-      format.xml  { render :xml => @organizations }
-    end
+    query_term = params[:q]
+    category_id = params["category"]["id"] if !params["category"].nil? && !params["category"]["id"].blank?
+    Services::SearchOrganization.new(self).call(query_term, category_id)
   end
 
-  # GET /organizations
-  # GET /organizations.json
   def index
-    @organizations = Organization.order("updated_at DESC")
-    @json = gmap4rails_with_popup_partial(@organizations,'popup')
-    @category_options = Category.where('charity_commission_id < 199').order('name ASC').collect {|c| [ c.name, c.id ] }
-    respond_to do |format|
-      format.html # index.html.erb
-      format.json { render json: @organizations }
-      format.xml  { render :xml => @organizations }
-    end
+    organizations = Organization.recent
+    @presenter = Facades::SearchOrganization.new('',organizations, '',
+                                              init_category_options,gmap4rails_with_popup_partial(organizations, 'popup'))
+    organization_render_formats(organizations)
   end
 
-  # GET /organizations/1
-  # GET /organizations/1.json
   def show
     @organization = Organization.find(params[:id])
     @editable = current_user.can_edit?(@organization) if current_user
@@ -46,8 +24,6 @@ class OrganizationsController < ApplicationController
     end
   end
 
-  # GET /organizations/new
-  # GET /organizations/new.json
   def new
     @organization = Organization.new
 
@@ -57,20 +33,17 @@ class OrganizationsController < ApplicationController
     end
   end
 
-  # GET /organizations/1/edit
   def edit
     @organization = Organization.find(params[:id])
   end
 
-  # POST /organizations
-  # POST /organizations.json
   def create
     # model filters for logged in users, but we check here if that user is an admin
     # TODO refactor that to model responsibility?
-     unless current_user.try(:admin?)
-       flash[:notice] = "You don't have permission"
-       redirect_to organizations_path and return false
-     end
+    unless current_user.try(:admin?)
+      flash[:notice] = "You don't have permission"
+      redirect_to organizations_path and return false
+    end
     @organization = Organization.new(params[:organization])
 
     respond_to do |format|
@@ -84,8 +57,6 @@ class OrganizationsController < ApplicationController
     end
   end
 
-  # PUT /organizations/1
-  # PUT /organizations/1.json
   def update
     @organization = Organization.find(params[:id])
     unless current_user.try(:can_edit?,@organization)
@@ -103,8 +74,6 @@ class OrganizationsController < ApplicationController
     end
   end
 
-  # DELETE /organizations/1
-  # DELETE /organizations/1.json
   def destroy
     unless current_user.try(:admin?)
       flash[:notice] = "You don't have permission"
@@ -124,5 +93,28 @@ class OrganizationsController < ApplicationController
     item.to_gmaps4rails  do |org, marker|
       marker.infowindow render_to_string(:partial => partial, :locals => { :@org => org})
     end
+  end
+
+  def search_organization_with_results(term, organizations, category)
+    @presenter = Facades::SearchOrganization.new(term, organizations, category, 
+                                              init_category_options, 
+                                              gmap4rails_with_popup_partial(organizations, 'popup'))
+    organization_render_formats(organizations)
+  end
+
+  def organization_render_formats(organizations)
+    respond_to do |format|
+      format.html { render :template =>'organizations/index'}
+      format.json { render json:  organizations }
+      format.xml  { render :xml => organizations }
+    end
+  end
+
+  def search_organization_without_results(organizations)
+    flash.now[:alert] = "Sorry, it seems we don't quite have what you are looking for." if organizations.empty?
+  end
+
+  def init_category_options
+    Category.first_charities.collect {|c| [ c.name, c.id ] }
   end
 end

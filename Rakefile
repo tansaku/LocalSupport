@@ -5,3 +5,7 @@
 require File.expand_path('../config/application', __FILE__)
 
 LocalSupport::Application.load_tasks
+
+# Added by devtools
+require 'devtools'
+Devtools.init_rake_tasks

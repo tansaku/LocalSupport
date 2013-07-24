@@ -13,11 +13,10 @@ group :development, :test do
   gem 'sqlite3'  
   gem 'database_cleaner'
   gem 'launchy'
-  gem 'simplecov'
   gem 'rspec-rails'
   gem 'execjs'
   gem 'rack_session_access'
-  gem 'simplecov', :require => false
+  gem 'devtools', :git => 'https://github.com/rom-rb/devtools.git'
 end
 
 group :development do
@@ -79,3 +78,5 @@ gem 'gmaps4rails'
 #gem 'mongrel'
 gem 'kaminari'
 gem 'unicorn'
+
+eval_gemfile 'Gemfile.devtools'
