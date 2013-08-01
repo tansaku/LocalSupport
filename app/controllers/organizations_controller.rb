@@ -13,7 +13,7 @@ class OrganizationsController < ApplicationController
 
     flash.now[:alert] = "Sorry, it seems we don't quite have what you are looking for." if @organizations.empty?
     @json = gmap4rails_with_popup_partial(@organizations,'popup')
-    @category_options = Category.where('charity_commission_id < 199').order('name ASC').collect {|c| [ c.name, c.id ] }
+    @category_options = Category.first_charities.collect {|c| [ c.name, c.id ] }
     respond_to do |format|
       format.html { render :template =>'organizations/index'}
       format.json { render json:  @organizations }
