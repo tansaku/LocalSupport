@@ -165,6 +165,10 @@ class Organization < ActiveRecord::Base
     end
   end
 
+  def self.recent
+    order("updated_at DESC")
+  end
+
   private
 
   def remove_errors_with_address

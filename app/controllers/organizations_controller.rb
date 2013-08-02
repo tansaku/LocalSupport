@@ -13,7 +13,7 @@ class OrganizationsController < ApplicationController
 
     flash.now[:alert] = "Sorry, it seems we don't quite have what you are looking for." if @organizations.empty?
     @json = gmap4rails_with_popup_partial(@organizations,'popup')
-    @category_options = Category.where('charity_commission_id < 199').order('name ASC').collect {|c| [ c.name, c.id ] }
+    @category_options = init_category_options
     respond_to do |format|
       format.html { render :template =>'organizations/index'}
       format.json { render json:  @organizations }
@@ -24,9 +24,9 @@ class OrganizationsController < ApplicationController
   # GET /organizations
   # GET /organizations.json
   def index
-    @organizations = Organization.order("updated_at DESC")
+    @organizations = Organization.recent
     @json = gmap4rails_with_popup_partial(@organizations,'popup')
-    @category_options = Category.where('charity_commission_id < 199').order('name ASC').collect {|c| [ c.name, c.id ] }
+    @category_options = init_category_options
     respond_to do |format|
       format.html # index.html.erb
       format.json { render json: @organizations }
@@ -34,10 +34,11 @@ class OrganizationsController < ApplicationController
     end
   end
 
+
   # GET /organizations/1
   # GET /organizations/1.json
   def show
-    @organization = Organization.find(params[:id])
+    @organization = Organization.by_id(params[:id])
     @editable = current_user.can_edit?(@organization) if current_user
     @json = gmap4rails_with_popup_partial(@organization,'popup')
     respond_to do |format|
@@ -59,7 +60,7 @@ class OrganizationsController < ApplicationController
 
   # GET /organizations/1/edit
   def edit
-    @organization = Organization.find(params[:id])
+    @organization = Organization.by_id(params[:id])
   end
 
   # POST /organizations
@@ -87,7 +88,7 @@ class OrganizationsController < ApplicationController
   # PUT /organizations/1
   # PUT /organizations/1.json
   def update
-    @organization = Organization.find(params[:id])
+    @organization = Organization.by_id(params[:id])
     unless current_user.try(:can_edit?,@organization)
       flash[:notice] = "You don't have permission"
       redirect_to organization_path(params[:id]) and return false
@@ -110,7 +111,7 @@ class OrganizationsController < ApplicationController
       flash[:notice] = "You don't have permission"
       redirect_to organization_path(params[:id]) and return false
     end
-    @organization = Organization.find(params[:id])
+    @organization = Organization.by_id(params[:id])
     @organization.destroy
 
     respond_to do |format|
@@ -124,5 +125,9 @@ class OrganizationsController < ApplicationController
     item.to_gmaps4rails  do |org, marker|
       marker.infowindow render_to_string(:partial => partial, :locals => { :@org => org})
     end
+  end
+
+  def init_category_options
+    Category.first_charities.collect {|c| [ c.name, c.id ] }
   end
 end
