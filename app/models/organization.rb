@@ -91,16 +91,18 @@ class Organization < ActiveRecord::Base
   def self.import_categories_from_array(row)
     check_columns_in(row)
     org = Organization.find_by_name(row[@@column_mappings[:name]].to_s.humanized_all_first_capitals)
-    if org
-      category_ids = row[@@column_mappings[:cc_id]]
-      if category_ids
-        category_ids.split(',').each do |id|
-          cat = Category.find_by_charity_commission_id(id.to_i)
-          org.categories << cat
-        end
-      end
-    end
+    category_ids = row[@@column_mappings[:cc_id]] if org
+    category_ids.split(',').each do |id|
+      cat = Category.find_by_charity_commission_id(id.to_i)
+      org.categories << cat
+    end if category_ids
     org
+  end
+
+  def self.org_category_ids(org)
+    category_ids = row[@@column_mappings[:cc_id]] if org
+
+
   end
 
   def self.import_category_mappings(filename, limit)
