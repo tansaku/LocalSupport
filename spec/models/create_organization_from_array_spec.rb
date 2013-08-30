@@ -22,10 +22,10 @@ describe CreateOrganizationFromArray, "#call" do
     CSV::Row.new(headers, fields.flatten)
   end
 
-  context 'create Organization from csv file without running validations' do 
+  pending 'create Organization from csv file without running validations' do 
     let(:organization) { stub(:organization) }
     before do 
-      Organization.double(:find_by_name) { organization }
+      Organization.stub.(:find_by_name) { organization }
     end
     subject { service.call(false) } 
 
