@@ -24,5 +24,4 @@ describe Address, "#parse" do
 
     it { should eql(:address =>'', :postcode => '') }
   end
-
 end

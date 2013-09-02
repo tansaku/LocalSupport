@@ -113,6 +113,7 @@ class Organization < ActiveRecord::Base
     CreateOrganizationFromArray.new(row, @@column_mappings).call(validate)
   end
 
+
   def self.import_addresses(filename, limit, validation = true)
     csv_text = File.open(filename, 'r:ISO-8859-1')
     count = 0
