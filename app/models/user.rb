@@ -20,6 +20,7 @@ class User < ActiveRecord::Base
     super
     make_admin_of_org_with_matching_email
   end
+  # filters
   
   def can_edit? org
     admin? || (!org.nil? && organization == org)
@@ -32,6 +33,14 @@ class User < ActiveRecord::Base
   end
 
 
+
+  def inactive_message
+    if charity_admin_pending?
+      :not_approved
+    else
+      super # Use whatever other message
+    end
+  end
 
 end
 
