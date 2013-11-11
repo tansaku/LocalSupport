@@ -274,6 +274,22 @@ end
 Then(/^"(.*?)" should have email "(.*?)"$/) do |org, email|
   Organization.find_by_name(org).email.should eq email
 end
+Given /^"(.*)"'s request status for "(.*)" should be updated appropriately$/ do |email,org|
+    steps %Q{
+      And "#{email}"'s request for "#{org}" should be persisted
+      And I should see "You have requested admin status for My Organization"
+      And I should not see "This is my organization"
+    }
+end
+
+And /"(.*)"'s request for "(.*)" should be persisted/ do |email,org|
+    user = User.find_by_email(email)
+    org = Organization.find_by_name(org)
+    user.pending_organization_id.should eq org.id
+end
+#Then an email should be sent to "admin@myorg.com"
+#And I should be on the charity page for "#{org}"
+
 
 When(/^the URL should contain "(.*?)"$/) do |string|
   URI.parse(current_url).path.should == '/' + string
