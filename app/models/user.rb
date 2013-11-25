@@ -22,7 +22,7 @@ class User < ActiveRecord::Base
   end
   
   def can_edit? org
-    admin? || (!org.nil? && organization == org)
+    admin? || (!org.nil? && self.organization == org)
   end
 
   def make_admin_of_org_with_matching_email
