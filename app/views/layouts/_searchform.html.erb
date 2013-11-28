@@ -1,20 +1,19 @@
 <%= form_tag("/organizations/search", :method => "get") do %>
     <div class='controls' id='customsearch' style="margin-top: 15px;">
       <div class="input-prepend dropdown input-append" data-select="true">
-        <!-- there must not be a space between the prepend toggle and the input field -->
         <a class='add-on dropdown-toggle' data-toggle='dropdown' href='#'>
-          <!-- span.dropdown-display will be updated with the text from the selected option -->
           <span class='dropdown-display'>Category</span><i class='caret'></i>
         </a>
         <%= text_field_tag(:q , @query_term || '', {:style => 'width: 240px;', :placeholder => "optional search name/description" }) %>
-        <!-- this hidden field is used to contain the selected option from the dropdown -->
         <input type='hidden' class='dropdown-field' id="category_id" name="category[id]" />
-        <!-- unordered list of options -->
-        <ul class='dropdown-menu'>
-          <li><a href="#" data-value="">All</a></li>
+        <ul id='cat_select' class='dropdown-menu'>
+          <li>
+            <%= link_to 'All', '#', :data => {:value =>" "}%>
+          </li>
           <% @category_options.each do |category| %>
-
-              <li><a href="#" data-value="<%= category[1]%>"><%= category[0]%></a></li>
+                <li>
+                  <%= link_to category[0], '#', :data => {:value =>category[1]} %>
+                </li>
           <% end %>
         </ul>
         <%= submit_tag "Search", {:class => 'btn'} %>
