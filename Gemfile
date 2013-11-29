@@ -30,7 +30,7 @@ group :test do
   gem 'cucumber-rails', :require => false
   gem 'cucumber-rails-training-wheels'
   gem 'minitest', '~> 4.7.1'
-  gem 'ZenTest'
+  gem 'ZenTest', '4.9.4'
   gem 'capybara', '2.0.2'
   gem "capybara-webkit", "~> 1.0.0"
   gem 'webrat'
@@ -74,7 +74,7 @@ group :test do
 end
 
 gem 'therubyracer'
-gem 'gmaps4rails'
+gem 'gmaps4rails', '1.5.6'
 #gem 'mongrel'
 gem 'kaminari'
 gem 'unicorn'

@@ -21,17 +21,19 @@ Feature: Categories of charities
       | category |  organization |
       | Animal Welfare | I love dogs |
       | Animal Welfare | I love cats |
+
   @javascript
   Scenario: Search for organizations in the "Animal Welfare" category
-  #Given I have at least 3 organizations in the "Animal Welfare" category
-  Given I am on the home page
-  Then show me the page
-  And I select the "Animal Welfare" category
-  And I press "Search"
-  Then I should see "I love dogs"
-  And I should not see "I hate animals"
+    #Given I have at least 3 organizations in the "Animal Welfare" category
+    Given I am on the home page
+    And show me the page
+    And I select the "Animal Welfare" category
+    And I press "Search"
+    Then I should see "I love dogs"
+    And I should not see "I hate animals"
 
     # TODO must ensure this also works with searching for text so we can search within a category
+  @javascript
   Scenario: Search for dogs in the Animal Welfare category
     Given I am on the home page
     And I select the "Animal Welfare" category

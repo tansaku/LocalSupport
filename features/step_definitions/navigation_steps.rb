@@ -1,12 +1,24 @@
 Given /^I am on the home page$/ do
   visit "/"
 end
+
 And /^I select the "(.*?)" category$/  do |category|
   #find("input#category_id").set(category)
-  click_link(category)
+  js_click_link(category)
   #find(:xpath, "//input[@id='category_id']").set category
   #fill_in 'category[id]', :with => category
   #select(category, :from => "category[id]")
+end
+
+def js_click_link(link_name)
+  begin
+    click_link link_name
+  rescue Capybara::Webkit::ClickFailed => e
+    links_with_text = "a:contains(\"#{link_name}\")"
+    links_with_id = "a[id=\"#{link_name}\"]"
+    click_command = "$('#{links_with_text},#{links_with_id}').click()"
+    evaluate_script click_command
+  end
 end
 
 Then /^I should be on the (.*) page$/ do |location|
