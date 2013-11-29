@@ -3,10 +3,9 @@ Given /^I am on the home page$/ do
 end
 And /^I select the "(.*?)" category$/  do |category|
   #find("input#category_id").set(category)
-  #click_link(category)
+  click_link(category)
   #find(:xpath, "//input[@id='category_id']").set category
   #fill_in 'category[id]', :with => category
-  page.execute_script("$.fn.dropSelect = function(#{category})")
   #select(category, :from => "category[id]")
 end
 
