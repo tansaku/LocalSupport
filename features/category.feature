@@ -21,12 +21,13 @@ Feature: Categories of charities
       | category |  organization |
       | Animal Welfare | I love dogs |
       | Animal Welfare | I love cats |
-
+  @javascript
   Scenario: Search for organizations in the "Animal Welfare" category
   #Given I have at least 3 organizations in the "Animal Welfare" category
   Given I am on the home page
+  Then show me the page
   And I select the "Animal Welfare" category
-  And I press "Submit"
+  And I press "Search"
   Then I should see "I love dogs"
   And I should not see "I hate animals"
 
