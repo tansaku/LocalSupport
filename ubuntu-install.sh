@@ -5,7 +5,6 @@
 # run with . <filename>.sh
 
 # Get password to be used with sudo commands
-# Script still requires password entry during rvm and heroku installs
 echo -n "Enter password to be used for sudo commands:"
 read -s password
 
@@ -14,29 +13,38 @@ function sudo-pw {
     echo $password | sudo -S $@
 }
 
-#5. Install Qt webkit headers
+# Update RVM and Ruby
+echo Y | rvm get stable
+rvm reload
+echo Y | rvm upgrade 1.9.3
+
+# 5. Install Qt webkit headers
 sudo-pw apt-get install -y libqtwebkit-dev
 
-#6. Install postgreSQL
+# 6. Install postgreSQL
 sudo-pw apt-get install -y libpq-dev
 sudo-pw apt-get install -y postgresql
 
-#7. Install X virtual frame buffer
+# 7. Install X virtual frame buffer
 sudo-pw apt-get install -y xvfb
 
-#8. git pull origin develop
+# Remove un-needed packages
+sudo-pw apt-get -y autoremove
+
+# 8. git pull origin develop
 git pull origin develop
 
-#9. git checkout develop
+# 9. git checkout develop
 git checkout develop
 
-#10. Run bundle install to get the gems
+# 10. Run bundle install to get the gems
 bundle install
+selenium install
 
-#11. Run the following to get the database set up and import seed data
+# 11. Run the following to get the database set up and import seed data
 bundle exec rake db:create
 bundle exec rake db:migrate
-echo "Please wait, seeding database ..."
+echo "Please wait, seeding database, this could take a while ..."
 bundle exec rake db:categories
 bundle exec rake db:seed
 bundle exec rake db:cat_org_import
@@ -44,7 +52,8 @@ bundle exec rake db:pages
 bundle exec rake db:test:prepare
 
 echo "**** NOTICE ****"
+echo "SETUP COMPLETE"
 echo "You can now run rails s to start a local server. See db/seeds.rb for user info"
-echo "You can run the following commands to test your setup"
+echo "You can run the following commands to test your setup. All tests should pass"
 echo "bundle exec rake spec"
 echo "bundle exec rake cucumber"
