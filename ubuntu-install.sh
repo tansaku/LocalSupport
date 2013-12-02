@@ -36,13 +36,15 @@ bundle install
 #11. Run the following to get the database set up and import seed data
 bundle exec rake db:create
 bundle exec rake db:migrate
+echo "Please wait, seeding database ..."
 bundle exec rake db:categories
 bundle exec rake db:seed
 bundle exec rake db:cat_org_import
 bundle exec rake db:pages
+bundle exec rake db:test:prepare
 
+echo "**** NOTICE ****"
 echo "You can now run rails s to start a local server. See db/seeds.rb for user info"
 echo "You can run the following commands to test your setup"
-echo "rake db:test:prepare"
 echo "bundle exec rake spec"
 echo "bundle exec rake cucumber"
