@@ -29,6 +29,10 @@ if [[ $@ != *no_rvm_ruby* ]]; then
   echo Y | rvm upgrade 1.9.3 || { error "upgrade Ruby"; return 1; }
 fi
 
+# reload profile to set new paths
+source ~/.bash_profile
+
+# Install needed packages
 if [[ $@ != *no_package* ]]; then
   # Install Qt webkit headers
   sudo apt-get install -y libqtwebkit-dev || { error "install webkit dev"; return 1; }
@@ -60,6 +64,7 @@ if [[ $@ != no_peer_fix ]]; then
   sudo sed -i '$ a\basic saasbook postgres' /etc/postgresql/9.1/main/pg_ident.conf || { error "apply peer fix part 2"; return 1; }
 fi
 
+# Restart postgresql to apply changes
 sudo /etc/init.d/postgresql restart
 
 # Run the following to get the database set up and import seed data
@@ -75,8 +80,10 @@ if [[ $@ != *no_db_seed* ]]; then
   bundle exec rake db:pages || { error "add pages to DB"; return 1; }
 fi
 
+# Prepare test database
 bundle exec rake db:test:prepare
 
+# Display completion notice
 echo "**** NOTICE ****"
 echo "SETUP COMPLETE"
 echo "You can now run rails s to start a local server."
