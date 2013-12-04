@@ -10,7 +10,7 @@
 #   no_rvm_ruby - Do not try to update RVM and Ruby
 #   no_package - Do not install aditional packages
 #   no_bundle - Do not run bundle and selenium installs
-#   no_peer_fix - Do not apply peer fix
+#   no_peer_fix - Do not apply peer fix to postgre config
 #   no_db_create - Do not create database, useful if DB exists
 #   no_db_seed - Do not run seeding command, useful if already seeded
 
