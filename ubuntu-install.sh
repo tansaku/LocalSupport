@@ -25,12 +25,10 @@ function error {
 # Update RVM and Ruby
 if [[ $@ != *no_rvm_ruby* ]]; then
   echo Y | rvm get stable || { error "update RVM"; return 1; }
-  rvm reload || error "reload RVM"
+  rvm reload || error "reload RVM first time"
   echo Y | rvm upgrade 1.9.3 || { error "upgrade Ruby"; return 1; }
+  rvm reload || error "reload RVM second time"
 fi
-
-# reload profile to set new paths
-source ~/.bash_profile
 
 # Install needed packages
 if [[ $@ != *no_package* ]]; then
