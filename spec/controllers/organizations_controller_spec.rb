@@ -425,49 +425,67 @@ describe OrganizationsController do
   end
 
   describe "DELETE destroy" do
-    context "while signed in as admin" do
-      before(:each) do
-        user = double("User")
-        user.stub(:admin?){true}
-        request.env['warden'].stub :authenticate! => user
-        controller.stub(:current_user).and_return(user)
-      end
-      it "destroys the requested organization" do
-        Organization.should_receive(:find).with("37") { double_organization }
-        double_organization.should_receive(:destroy)
-        delete :destroy, :id => "37"
+    before(:each) do
+      Gmaps4rails.stub(:geocode).and_return([{:lat => 33, :lng => 33,
+                                              :matched_address => ""}])
+      @organization = FactoryGirl.create(:organization)
+    end
+
+    context "user signed in" do
+      context "as admin" do
+        let(:admin) { FactoryGirl.create(:admin) }
+
+        before(:each) do
+          sign_in(admin)
+        end
+
+        it "deletes the organization" do
+          expect{
+            delete :destroy, id: @organization
+          }.to change(Organization,:count).by(-1)
+        end
+
+        it "redirects to the organizations path" do
+          delete :destroy, id: @organization
+          response.should redirect_to organizations_path
+        end
       end
 
-      it "redirects to the organizations list" do
-        Organization.stub(:find) { double_organization }
-        delete :destroy, :id => "1"
-        response.should redirect_to(organizations_url)
+      context "as non-admin" do
+        let(:user) { FactoryGirl.create(:user) }
+
+        before(:each) do
+          sign_in(user)
+        end
+
+        it "does not delete the organization" do
+          expect{
+            delete :destroy, id: @organization
+          }.to_not change(Organization,:count)
+        end
+
+        it "redirects to the organization's page" do
+          delete :destroy, id: @organization
+          response.should redirect_to organization_path(@organization)
+        end
+
+        it "flashes a relevant notice" do
+          delete :destroy, id: @organization
+          expect(flash[:notice]).to have_content(PERMISSION_DENIED)
+        end
       end
     end
-    context "while signed in as non-admin" do
-      before(:each) do
-        user = double("User")
-        user.stub(:admin?){false}
-        request.env['warden'].stub :authenticate! => user
-        controller.stub(:current_user).and_return(user)
-      end
-      it "does not destroy the requested organization" do
-        double = double_organization
-        Organization.should_not_receive(:find).with("37"){double}
-        double.should_not_receive(:destroy)
-        delete :destroy, :id => "37"
+
+    context "user not signed in" do
+      it "does not delete the organization" do
+        expect{
+          delete :destroy, id: @organization
+        }.to_not change(Organization,:count)
       end
 
-      it "redirects to the organization home page" do
-        Organization.stub(:find) { double_organization }
-        delete :destroy, :id => "1"
-        response.should redirect_to(organization_url(1))
-      end
-    end
-    context "while not signed in" do
-      it "redirects to sign-in" do
-        delete :destroy, :id => "37"
-        expect(response).to redirect_to new_user_session_path
+      it "redirects to the sign in path" do
+        delete :destroy, id: @organization
+        response.should redirect_to new_user_session_path
       end
     end
   end
