@@ -23,6 +23,10 @@ FactoryGirl.define do
     admin false
     organization nil
 
+    factory :admin do
+      admin true
+    end
+
     factory :user_stubbed_organization do
       after(:build) do |user|
         Gmaps4rails.stub(:geocode)
