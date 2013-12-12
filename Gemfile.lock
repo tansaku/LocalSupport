@@ -88,7 +88,7 @@ GEM
     cucumber-rails-training-wheels (1.0.0)
       cucumber-rails (>= 1.1.1)
     database_cleaner (1.0.1)
-    debugger (1.6.2)
+    debugger (1.6.1)
       columnize (>= 0.3.1)
       debugger-linecache (~> 1.2.0)
       debugger-ruby_core_source (~> 1.2.3)
@@ -295,6 +295,9 @@ GEM
       rack
       raindrops (~> 0.7)
     uri-handler (1.0.2)
+    url_validator (0.1.0)
+      addressable
+      rails
     warden (1.2.3)
       rack (>= 1.0)
     webmock (1.16.0)
@@ -320,7 +323,7 @@ DEPENDENCIES
   cucumber-rails
   cucumber-rails-training-wheels
   database_cleaner (= 1.0.1)
-  debugger
+  debugger (= 1.6.1)
   devise (= 3.0.3)
   execjs
   factory_girl_rails
@@ -349,5 +352,6 @@ DEPENDENCIES
   uglifier
   unicorn
   uri-handler
+  url_validator
   webmock
   webrat
