@@ -18,6 +18,8 @@ group :development, :test do
   gem 'execjs'
   gem 'rack_session_access'
   gem 'simplecov', :require => false
+  gem 'jasmine'
+  gem 'jasmine-jquery-rails'
 end
 
 group :development do
