@@ -339,13 +339,9 @@ DEPENDENCIES
   execjs
   factory_girl_rails
   font-awesome-rails
-<<<<<<< HEAD
-  gmaps4rails (= 1.5.6)
-=======
   gmaps4rails
   jasmine
   jasmine-jquery-rails
->>>>>>> 786dc4f6653488d0ebc46981c8540355005e6464
   jquery-rails
   kaminari
   launchy
