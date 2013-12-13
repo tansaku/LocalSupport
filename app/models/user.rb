@@ -43,4 +43,7 @@ class User < ActiveRecord::Base
     self.pending_organization_id = nil
     save!
   end
+  def make_reset_password_token!
+    generate_reset_password_token!
+  end
 end

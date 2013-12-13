@@ -155,7 +155,7 @@ class Organization < ActiveRecord::Base
     user = User.new(:email => self.email, :password => password)
     user.skip_confirmation_notification!
     user.save!
-    user.generate_reset_password_token!
+    user.make_reset_password_token!
   end
 
   def self.import_emails(filename, limit, validation = true)

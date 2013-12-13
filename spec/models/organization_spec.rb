@@ -439,7 +439,7 @@ describe Organization do
 
     it 'should ask the db for orgs where emails are present but users are blank' do
       Organization.stub_chain(:where, :select).with("email <> ''").with().and_return([org])
-      Organization.should_receive(:generate_potential_users).with(org)
+      org.should_receive(:generate_potential_users)
       Organization.find_orphan_organizations.should eq [org]
     end
 
