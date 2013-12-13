@@ -146,14 +146,13 @@ class Organization < ActiveRecord::Base
   end
 
   def self.find_orphan_organizations
-    self.where("email <> ''").select {|o| o.users.blank?}.each {|org| org
-
-    end
+    orgs = self.where("email <> ''").select {|o| o.users.blank?}
+    orgs.each {|org| org.generate_potential_users} 
   end
 
-  def self.generate_potential_users org
+  def generate_potential_users
     password = Devise.friendly_token.first(8)
-    user = User.new(:email => org.email, :password => password)
+    user = User.new(:email => self.email, :password => password)
     user.skip_confirmation_notification!
     user.save!
     user.generate_reset_password_token!
