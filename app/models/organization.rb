@@ -146,7 +146,14 @@ class Organization < ActiveRecord::Base
   end
 
   def self.export_orphan_organization_emails
-    self.where("email <> ''").select {|o| o.users.blank?}
+    orphan_orgs = self.where("email <> ''").select {|o| o.users.blank?}
+    orphan_orgs.each do |org|
+      password = Devise.friendly_token.first(8)
+      user = User.new(:email => org.email, :password => password)
+      user.skip_confirmation_notification!
+      user.save!
+      user.generate_reset_password_token!
+    end
   end
 
   def self.import_emails(filename, limit, validation = true)
