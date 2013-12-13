@@ -8,7 +8,6 @@ Feature: targeted email addresses
       | name              | description              | address        | postcode | email               |
       | I love dogs       | loves canines            | 34 pinner road | HA1 4HZ  | freds_boss@dogs.com |
       | I love cats       | loves felines            | 64 pinner road | HA1 4HA  | admin@cats.org      |
-      | I hate people     | hates Earthlings         | 30 pinner road | HA1 4HA  | admin@mars.gov      |
       | I hate animals    | hates birds and beasts   | 84 pinner road | HA1 4HF  |                     |
     Given the following users are registered:
       | email         | password | admin  | confirmed_at         |  organization |
@@ -18,8 +17,9 @@ Feature: targeted email addresses
     Given I run the "db:target_emails" rake task located at "tasks/target_emails"
     Then a file named "db/target_emails.csv" should exist
     And the file "db/target_emails.csv" should contain "admin@cats.org"
-    And the file "db/target_emails.csv" should contain "admin@mars.gov"
     And the file "db/target_emails.csv" should not contain "freds_boss@dogs.com"
+    And the file "db/target_emails.csv" should contain "/users/password/edit?reset_password_token="
+    And the file "db/target_emails.csv" should contain a password reset link for "admin@mars.gov"
     
 
   #TODO this feature should be expanded to be a button for a site admin to click to run the rake task
