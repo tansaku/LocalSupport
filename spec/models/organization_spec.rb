@@ -434,13 +434,19 @@ describe Organization do
   end
   
   describe "rake target emails" do
-    it "should have a method export_orphan_organization_emails" do
-      Organization.should respond_to :export_orphan_organization_emails
-    end
+    let(:email) { 'potential_user@charity.org' }
 
     it 'should ask the db for orgs where emails are present but users are blank' do
-      Organization.stub_chain(:where, :select).with("email <> ''").with().and_return([])
-      Organization.export_orphan_organization_emails.should eq []
+      Organization.stub_chain(:where, :select).with("email <> ''").with().and_return([email])
+      Organization.export_orphan_organization_emails.should eq [email]
+    end
+
+    it 'should create accounts for each email, suppressing confirmation email' do
+      Devise.stub_chain(:friendly_token, :first).with().with(8).and_return('password')
+      User.should_receive(:new).with({:email => email, :password => 'password'})
+      User.should_receive(:skip_confirmation_notification!)
+      User.should_receive(:save!)
+      User.should_receive(:generate_reset_password_token!)
     end
     
   end

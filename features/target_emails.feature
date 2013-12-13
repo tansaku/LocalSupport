@@ -19,8 +19,7 @@ Feature: targeted email addresses
     And the file "db/target_emails.csv" should contain "admin@cats.org"
     And the file "db/target_emails.csv" should not contain "freds_boss@dogs.com"
     And the file "db/target_emails.csv" should contain "/users/password/edit?reset_password_token="
-    And the file "db/target_emails.csv" should contain a password reset link for "admin@mars.gov"
-    
+
 
   #TODO this feature should be expanded to be a button for a site admin to click to run the rake task
   #and download the CSV from the website.
