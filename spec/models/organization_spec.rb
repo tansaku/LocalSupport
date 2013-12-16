@@ -442,16 +442,21 @@ describe Organization do
       org.should_receive(:generate_potential_users)
       Organization.find_orphan_organizations.should eq [org]
     end
-
+  end
+  describe "generate_potential_users target emails" do
+      let(:org) { stub_model(Organization, {:email => 'potential_user@charity.org'}) }
+      let(:user) { stub_model(User, {:email => org.email, :password => 'password'}) }
     it 'should create accounts for each email, suppressing confirmation email' do
+      Organization.stub(:find_orphan_organizations).and_return [org]
       Devise.stub_chain(:friendly_token, :first).with().with(8).and_return('password')
-      User.should_receive(:new).with({:email => org.email, :password => 'password'})
+      #User.should_receive(:new).with(:email => org.email, :password => 'password')
       user.should_receive(:skip_confirmation_notification!)
       User.should_receive(:reset_password_token)
       user.should_receive(:reset_password_token)
       user.should_receive(:reset_password_sent_at)
       user.should_receive(:save!)
       user.should_receive(:confirm!)
+      org.generate_potential_users
     end
     
   end
