@@ -16,11 +16,16 @@ Feature: targeted email addresses
   Scenario: Rake task is run
     Given I run the "db:target_emails" rake task located at "tasks/target_emails"
     Then a file named "db/target_emails.csv" should exist
-    And the file "db/target_emails.csv" should contain "admin@cats.org"
+    And the file "db/target_emails.csv" should contain "I love cats,admin@cats.org,/users/password/edit?initial=true&reset_password_token="
     And the file "db/target_emails.csv" should not contain "freds_boss@dogs.com"
-    And the file "db/target_emails.csv" should contain "/users/password/edit?reset_password_token="
 
 
+  Scenario: User resets password 
+    Given I run the "db:target_emails" rake task located at "tasks/target_emails"
+    When I click on the link to reset my password in "db:target_emails"
+    Then I should be on the edit password page
+    When I change my password
+    Then I should be able to log in with the new password
   #TODO this feature should be expanded to be a button for a site admin to click to run the rake task
   #and download the CSV from the website.
 
