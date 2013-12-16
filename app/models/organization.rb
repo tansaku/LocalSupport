@@ -154,6 +154,10 @@ class Organization < ActiveRecord::Base
     password = Devise.friendly_token.first(8)
     user = User.new(:email => self.email, :password => password)
     user.skip_confirmation_notification!
+    user.reset_password_token=(User.reset_password_token)
+    user.reset_password_sent_at=Time.now
+    user.save!
+    user.confirm!
   end
 
   def self.import_emails(filename, limit, validation = true)
