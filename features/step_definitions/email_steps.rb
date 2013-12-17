@@ -34,7 +34,7 @@ Given(/^I run the "(.*?)" rake task located at "(.*?)"$/) do |task, loc|
   # tasks pulled in - not sure what other side effects there might be
   Rake.application.rake_require loc, ['lib/'], ''
   Rake::Task.define_task(:environment)
-  @rake[task].invoke
+  @rake[task].invoke('aruba.csv')
 end
 
 
