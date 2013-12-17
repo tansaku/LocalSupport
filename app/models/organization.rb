@@ -147,7 +147,8 @@ class Organization < ActiveRecord::Base
 
   def self.find_users_for_orphan_organizations
     orgs = self.where("email <> ''").select {|o| o.users.blank?}
-    orgs.collect {|org| org.generate_potential_user unless User.find_by_email(org.email)}
+    # unless User.find_by_email(org.email)
+    orgs.collect {|org| org.generate_potential_user }
   end
 
   def generate_potential_user
