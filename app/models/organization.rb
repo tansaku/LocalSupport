@@ -145,9 +145,9 @@ class Organization < ActiveRecord::Base
     end
   end
 
-  def self.find_orphan_organizations
+  def self.find_users_for_orphan_organizations
     orgs = self.where("email <> ''").select {|o| o.users.blank?}
-    orgs.each {|org| org.generate_potential_users} 
+    orgs.collect {|org| org.generate_potential_users}
   end
 
   def generate_potential_users
@@ -158,6 +158,7 @@ class Organization < ActiveRecord::Base
     user.reset_password_sent_at=Time.now
     user.save!
     user.confirm!
+    user
   end
 
   def self.import_emails(filename, limit, validation = true)

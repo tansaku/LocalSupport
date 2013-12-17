@@ -27,6 +27,7 @@ Feature: targeted email addresses
     Then I should be on the edit password page
     When I change my password to "asdf1234"
     Then I should be on the charity page for "I love cats"
+    And I should see an edit button for "I love cats" charity
   #TODO this feature should be expanded to be a button for a site admin to click to run the rake task
   #and download the CSV from the website.
 
