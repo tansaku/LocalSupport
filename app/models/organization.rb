@@ -147,10 +147,10 @@ class Organization < ActiveRecord::Base
 
   def self.find_users_for_orphan_organizations
     orgs = self.where("email <> ''").select {|o| o.users.blank?}
-    orgs.collect {|org| org.generate_potential_users}
+    orgs.collect {|org| org.generate_potential_user unless User.find_by_email(org.email)}
   end
 
-  def generate_potential_users
+  def generate_potential_user
     password = Devise.friendly_token.first(8)
     user = User.new(:email => self.email, :password => password)
     user.skip_confirmation_notification!

@@ -439,15 +439,10 @@ describe Organization do
 
     it 'should ask the db to find users for orgs where email is present but user is blank' do
       Organization.stub_chain(:where, :select).with("email <> ''").with().and_return([org])
-      org.should_receive(:generate_potential_users)
+      org.should_receive(:generate_potential_user).and_return(user)
       Organization.find_users_for_orphan_organizations.should eq [user]
     end
-  end
 
-  describe "generate_potential_users for target emails" do
-    let(:org) { stub_model(Organization, {:email => 'potential_user@charity.org'}) }
-    let(:user) { stub_model(User, {:email => org.email, :password => 'password'}) }
-    
     it 'should create an account for each email, suppressing confirmation email' do
       user = double("User")
       Organization.stub(:find_users_for_orphan_organizations).and_return [org]
@@ -459,7 +454,11 @@ describe Organization do
       user.should_receive(:reset_password_sent_at=)
       user.should_receive(:save!)
       user.should_receive(:confirm!)
-      org.generate_potential_users
+      org.generate_potential_user
+    end
+
+    it 'user object creation should not raise an exception' do
+        org.generate_potential_user.should_not raise_exception
     end
   end
 
