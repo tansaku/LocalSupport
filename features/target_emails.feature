@@ -22,10 +22,11 @@ Feature: targeted email addresses
 
   Scenario: User resets password 
     Given I run the "db:target_emails" rake task located at "tasks/target_emails"
-    When I click on the link to reset my password in "db:target_emails"
+    # admin for 'I love cats' is the only user created by this process
+    When I click on the link to reset my password in "/db/target_emails.csv"
     Then I should be on the edit password page
-    When I change my password
-    Then I should be able to log in with the new password
+    When I change my password to "asdf1234"
+    Then I should be on the charity page for "I love cats"
   #TODO this feature should be expanded to be a button for a site admin to click to run the rake task
   #and download the CSV from the website.
 

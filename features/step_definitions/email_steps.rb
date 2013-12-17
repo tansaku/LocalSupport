@@ -36,3 +36,10 @@ Given(/^I run the "(.*?)" rake task located at "(.*?)"$/) do |task, loc|
   Rake::Task.define_task(:environment)
   @rake[task].invoke
 end
+
+
+When(/^I click on the link to reset my password in "(.*?)"$/) do |filename|
+  # CSV.read returns an array of arrays, and I want to be sure I have the last row's last element
+  url = CSV.read(Dir.pwd + filename).last.last
+  visit url
+end

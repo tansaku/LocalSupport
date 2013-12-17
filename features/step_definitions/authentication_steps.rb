@@ -21,6 +21,12 @@ Given /^I sign up as "(.*?)" with password "(.*?)" and password confirmation "(.
   click_button "Sign up"
 end
 
+When(/^I change my password to "(.*?)"$/) do |password|
+  find(:css, "#new_user input#user_password").set(password)
+  find(:css, "#new_user input#user_password_confirmation").set(password)
+  click_button "Change my password"
+end
+
 Given /^I sign in as a charity worker with permission to edit "(.*?)"$/ do |name|
   org = Organization.find_by_name name
   org.users   # TODO we will want some habtm to support this eventually
@@ -107,3 +113,5 @@ When(/^I sign in as "(.*?)" with password "(.*?)" via email confirmation$/) do |
     And I sign in as "#{email}" with password "#{password}"
   }
 end
+
+
