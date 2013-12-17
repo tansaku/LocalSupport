@@ -4,10 +4,15 @@ Feature: targeted email addresses
   I want a CSV listing organizations with emails but without admins
 
   Background: organizations have been added to database
+    # This 'create users' block is ran before a 'create organizations' block so as to not have user-organization relation
+    Given the following users are registered:
+      | email            | password | admin  | confirmed_at         |
+      | guy@people.com   | pppppppp | false  | 2007-01-01  10:00:00 |
     Given the following organizations exist:
       | name              | description              | address        | postcode | email               |
       | I love dogs       | loves canines            | 34 pinner road | HA1 4HZ  | freds_boss@dogs.com |
       | I love cats       | loves felines            | 64 pinner road | HA1 4HA  | admin@cats.org      |
+      | People are OK too | Ambivalent               | 30 pinner road | HA1 4HZ  | guy@people.com      |
       | I hate animals    | hates birds and beasts   | 84 pinner road | HA1 4HF  |                     |
     Given the following users are registered:
       | email         | password | admin  | confirmed_at         |  organization |
@@ -15,15 +20,21 @@ Feature: targeted email addresses
 
   Scenario: Rake task is run
     Given I run the "db:target_emails" rake task located at "tasks/target_emails"
-    Then a file named "db/target_emails.csv" should exist
-    And the file "db/target_emails.csv" should contain "I love cats,admin@cats.org,/users/password/edit?initial=true&reset_password_token="
-    And the file "db/target_emails.csv" should not contain "freds_boss@dogs.com"
+    Then a file named "db/csv/aruba.csv" should exist
+    And the file "db/csv/aruba.csv" should contain "I love cats,admin@cats.org,/users/password/edit?initial=true&reset_password_token="
+    And the file "db/csv/aruba.csv" should not contain "freds_boss@dogs.com"
+
+ Scenario: Rake task is run in db with disconnected users
+   Given I run the "db:target_emails" rake task located at "tasks/target_emails"
+   And the file "db/csv/aruba.csv" should not contain "guy@people.com"
+
+
 
 
   Scenario: User resets password 
     Given I run the "db:target_emails" rake task located at "tasks/target_emails"
     # admin for 'I love cats' is the only user created by this process
-    When I click on the link to reset my password in "/db/csv/aruba.csv"
+    When I click on the link to reset the password for "admin@cats.org" in "db/csv/aruba.csv"
     Then I should be on the edit password page
     When I change my password to "asdf1234"
 #    And show me the page

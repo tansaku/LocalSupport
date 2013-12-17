@@ -38,8 +38,11 @@ Given(/^I run the "(.*?)" rake task located at "(.*?)"$/) do |task, loc|
 end
 
 
-When(/^I click on the link to reset my password in "(.*?)"$/) do |filename|
-  # CSV.read returns an array of arrays, and I want to be sure I have the last row's last element
-  url = CSV.read(Dir.pwd + filename).last.last
+When(/^I click on the link to reset the password for "(.*?)" in "(.*?)"$/) do |user_email, filename|
+  # CSV FORMAT: org_name | user_email | url
+  csv = CSV.read(Dir.pwd + '/' + filename)
+  idx = csv.index { |row| row[1] == user_email }
+  url = csv[idx][2]
+  raise(exception, 'no matches!') unless url
   visit url
 end
