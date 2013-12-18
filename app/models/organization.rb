@@ -20,6 +20,11 @@ class Organization < ActiveRecord::Base
   attr_accessible :name, :description, :address, :postcode, :email, :website, :telephone, :donation_info
   accepts_nested_attributes_for :users
   scope :order_by_most_recent, order('updated_at DESC')
+  scope :not_null_email, :conditions => "organizations.email <> ''"
+  scope :null_users, lambda {
+    includes(:users).where("users.organization_id IS NULL")
+    #joins('LEFT OUTER JOIN users ON users.organization_id = organizations.id WHERE users.organization_id IS NULL')
+  }
 
   # if we removed check_process => false saving the model would not trigger a geocode
   #after_commit :process_geocoding

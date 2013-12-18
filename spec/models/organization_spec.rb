@@ -22,6 +22,35 @@ describe Organization do
     @org3 = FactoryGirl.build(:organization, :name => 'Age UK Elderly', :description => 'Care for older people', :address => '62 pinner road', :postcode => 'HA1 3RE', :donation_info => 'www.age-uk.co.uk/donate')
     @org3.categories << @category1
     @org3.save!
+    @user = FactoryGirl.build(:user)
+  end
+
+  context 'scopes for orphan orgs' do
+    it 'should allow us to grab orgs with emails' do
+      Organization.not_null_email.should eq []
+      @org1.email = "hello@hello.com"
+      @org1.save
+      Organization.not_null_email.should eq [@org1]
+    end
+
+    it 'should allow us to grab orgs with no admin' do
+      Organization.null_users.should include @org1
+      Organization.null_users.should include @org2
+      Organization.null_users.should include @org3
+      @org1.users << User.new
+      @org1.save
+      Organization.null_users.should include @org2
+      Organization.null_users.should include @org3
+    end
+
+    it 'should allow us to combine scopes' do
+      @org1.email = "hello@hello.com"
+      @org1.save
+      @org2.users << User.new
+      @org2.save
+      Organization.null_users.not_null_email.should include @org1
+    end
+
   end
 
   context 'validating URLs' do
