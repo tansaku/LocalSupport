@@ -435,30 +435,39 @@ describe Organization do
   
   describe "generating target emails" do
     let(:org) { stub_model(Organization, {:email => 'potential_user@charity.org'}) }
-    let(:user) { stub_model(User, {:email => org.email, :password => 'password'}) }
+    # using a stub_model confuses User.should_receive on line 450 because it's expecting :new from my organization.rb, but instead the stub_model calls it first
+    let(:user) { double('User', {:email => org.email, :password => 'password'}) }
 
-    it 'should ask the db to find users for orgs where email is present but user is blank' do
-      Organization.stub_chain(:where, :select).with("email <> ''").with().and_return([org])
-      org.should_receive(:generate_potential_user).and_return(user)
-      Organization.find_users_for_orphan_organizations.should eq [user]
+    describe '#find_users_for_orphan_organizations' do
+      it 'should ask the db to find users for orgs where email is present but user is blank' do
+        Organization.stub_chain(:where, :select).with("email <> ''").with().and_return([org])
+        org.should_receive(:generate_potential_user).and_return(user)
+        Organization.find_users_for_orphan_organizations.should eq [user]
+      end
+
+      it 'user object creation should not raise an exception' do
+        expect(lambda { org.generate_potential_user }).not_to raise_error
+      end
     end
 
-    it 'should create an account for each email, suppressing confirmation email' do
-      user = double("User")
-      Organization.stub(:find_users_for_orphan_organizations).and_return [org]
-      Devise.stub_chain(:friendly_token, :first).with().with(8).and_return('password')
-      User.should_receive(:new).with(:email => org.email, :password => 'password').and_return(user)
-      user.should_receive(:skip_confirmation_notification!)
-      User.should_receive(:reset_password_token)
-      user.should_receive(:reset_password_token=)
-      user.should_receive(:reset_password_sent_at=)
-      user.should_receive(:save!)
-      user.should_receive(:confirm!)
-      org.generate_potential_user
-    end
+    describe '#generate_potential_user' do
+      it 'should create an account for each email, suppressing confirmation email' do
+        Organization.stub(:find_users_for_orphan_organizations).and_return [org]
+        Devise.stub_chain(:friendly_token, :first).with().with(8).and_return('password')
+        User.should_receive(:new).with({:email => org.email, :password => 'password'}).and_return(user)
+        user.should_receive(:skip_confirmation_notification!)
+        User.should_receive(:reset_password_token)
+        user.should_receive(:reset_password_token=)
+        user.should_receive(:reset_password_sent_at=)
+        user.should_receive(:save!)
+        user.should_receive(:confirm!)
+        org.generate_potential_user
+      end
 
-    it 'user object creation should not raise an exception' do
-        org.generate_potential_user.should_not raise_exception
+      it 'should handle disconnected users gracefully' do
+        allow(user).to receive(:organization).and_return(nil)
+
+      end
     end
   end
 

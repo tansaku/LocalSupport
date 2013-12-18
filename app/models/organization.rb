@@ -146,8 +146,14 @@ class Organization < ActiveRecord::Base
   end
 
   def self.find_users_for_orphan_organizations
-    orgs = self.where("email <> ''").select {|o| o.users.blank?}
-    # unless User.find_by_email(org.email)
+    user_emails = User.all.collect {|u| u.email}
+              # where org has no email : all_with_no_email
+    orgs = self.where("email <> ''")
+              # where org has no admin : all_with_no_admin
+    orgs = orgs.select {|o| o.users.blank?}
+              #                        : 
+              # where org email isn't already in use by a disconnected user
+    orgs = orgs.select {|o| user_emails.exclude?(o.email)}
     orgs.collect {|org| org.generate_potential_user }
   end
 
