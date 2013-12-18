@@ -21,10 +21,12 @@ class Organization < ActiveRecord::Base
   accepts_nested_attributes_for :users
   scope :order_by_most_recent, order('updated_at DESC')
   scope :not_null_email, :conditions => "organizations.email <> ''"
-  scope :null_users, lambda {
-    includes(:users).where("users.organization_id IS NULL")
-    #joins('LEFT OUTER JOIN users ON users.organization_id = organizations.id WHERE users.organization_id IS NULL')
-  }
+  # Should we not use :includes, which pulls in extra data? http://nlingutla.com/blog/2013/04/21/includes-vs-joins-in-rails/
+  # Alternative => :joins('LEFT OUTER JOIN users ON users.organization_id = organizations.id)
+  # Difference between inner and outer joins: http://stackoverflow.com/a/38578/2197402
+  scope :null_users, lambda { includes(:users).where("users.organization_id IS NULL") }
+  # NB: Currently this also excludes orgs w/o emails!
+  scope :not_matching_disconnected_users, :conditions => "organizations.email NOT IN (SELECT email FROM users)"
 
   # if we removed check_process => false saving the model would not trigger a geocode
   #after_commit :process_geocoding
@@ -33,8 +35,6 @@ class Organization < ActiveRecord::Base
     ## http://api.rubyonrails.org/classes/ActiveModel/Dirty.html
     address_changed? or (address.present? and not_geocoded?)
   end
-
-
 
   def not_geocoded?
     latitude.blank? and longitude.blank?
@@ -151,15 +151,8 @@ class Organization < ActiveRecord::Base
   end
 
   def self.find_users_for_orphan_organizations
-    user_emails = User.all.collect {|u| u.email}
-              # where org has no email : all_with_no_email
-    orgs = self.where("email <> ''")
-              # where org has no admin : all_with_no_admin
-    orgs = orgs.select {|o| o.users.blank?}
-              #                        : 
-              # where org email isn't already in use by a disconnected user
-    orgs = orgs.select {|o| user_emails.exclude?(o.email)}
-    orgs.collect {|org| org.generate_potential_user }
+    orgs = Organization.not_null_email.null_users.not_matching_disconnected_users
+    orgs.collect { |org| org.generate_potential_user }
   end
 
   def generate_potential_user

@@ -81,16 +81,13 @@ describe User do
       @user.organization.should_not eq @match_org
     end
 
-    it 'should not promote the admin user if org email does not match' do
-      @admin_user.make_admin_of_org_with_matching_email
-      @admin_user.organization.should_not eq @mismatch_org
-    end
-
-    it 'should promote the admin user if org email matches' do
+    it 'should promote the admin user to be admin of the correct org' do
       @admin_user.make_admin_of_org_with_matching_email
       @admin_user.organization.should eq @match_org
+      @admin_user.organization.should_not eq @mismatch_org
+      @match_org.users.should include @admin_user
+      @mismatch_org.users.should_not include @admin_user
     end
-
   end
   describe '#promote_to_org_admin' do
     subject(:user) { User.new }

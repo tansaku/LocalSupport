@@ -22,10 +22,14 @@ describe Organization do
     @org3 = FactoryGirl.build(:organization, :name => 'Age UK Elderly', :description => 'Care for older people', :address => '62 pinner road', :postcode => 'HA1 3RE', :donation_info => 'www.age-uk.co.uk/donate')
     @org3.categories << @category1
     @org3.save!
-    @user = FactoryGirl.build(:user)
   end
 
   context 'scopes for orphan orgs' do
+    before(:each) do
+      @user = FactoryGirl.create(:user, :email => "hello@hello.com")
+      @user.confirm!
+    end
+
     it 'should allow us to grab orgs with emails' do
       Organization.not_null_email.should eq []
       @org1.email = "hello@hello.com"
@@ -34,23 +38,35 @@ describe Organization do
     end
 
     it 'should allow us to grab orgs with no admin' do
-      Organization.null_users.should include @org1
-      Organization.null_users.should include @org2
-      Organization.null_users.should include @org3
-      @org1.users << User.new
+      Organization.null_users.sort.should eq [@org1, @org2, @org3].sort
+      @org1.email = "hello@hello.com"
       @org1.save
-      Organization.null_users.should include @org2
-      Organization.null_users.should include @org3
+      @user.confirm!
+      @org1.users.should eq [@user]
+      Organization.null_users.sort.should eq [@org2, @org3].sort
     end
 
+    it 'should allow us to exclude orgs with emails matching disconnected users' do
+      # NB: Currently this also excludes orgs w/o emails!
+      # Even stranger, if no users exist, it will return orgs without emails. This has to do with SQL optimization?
+      #Organization.not_matching_disconnected_users.sort.should eq [@org1, @org2, @org3].sort
+      @org1.email = "hello@hello.com" ; @org2.email = "goodbye@goodbye.com"
+      @org1.save                      ; @org2.save
+      @org1.users.should eq []
+      Organization.not_matching_disconnected_users.sort.should eq [@org2]
+    end
+
+    # Should we have more tests to cover more possible combinations?
     it 'should allow us to combine scopes' do
       @org1.email = "hello@hello.com"
       @org1.save
+      @org2.email = "goodbye@goodbye.com"
       @org2.users << User.new
       @org2.save
-      Organization.null_users.not_null_email.should include @org1
+      @org3.email = "hello_again@you_again.com"
+      @org3.save
+      Organization.null_users.not_null_email.not_matching_disconnected_users.sort.should eq [@org3]
     end
-
   end
 
   context 'validating URLs' do
@@ -469,7 +485,7 @@ describe Organization do
 
     describe '#find_users_for_orphan_organizations' do
       it 'should ask the db to find users for orgs where email is present but user is blank' do
-        Organization.stub_chain(:where, :select).with("email <> ''").with().and_return([org])
+        Organization.stub_chain(:not_null_email, :null_users, :not_matching_disconnected_users).and_return([org])
         org.should_receive(:generate_potential_user).and_return(user)
         Organization.find_users_for_orphan_organizations.should eq [user]
       end
