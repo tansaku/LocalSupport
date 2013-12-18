@@ -1,4 +1,5 @@
 # rake db:target_emails['db/csv/target_emails.csv']
+# To undo user creation: User.where("created_at > ?", 1.day.ago).each {|u| u.destroy}
 require 'csv'
 namespace :db do
   task :target_emails, [:file] => :environment do |_, args|
