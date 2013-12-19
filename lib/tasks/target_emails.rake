@@ -9,6 +9,7 @@ namespace :db do
     CSV.open("db/csv/target_emails.csv", "wb") do |csv|
       users.each do |user|
         unless user.nil?
+          puts "writing line for user: #{user.email}"
           token = user.reset_password_token
           reset_path = Rails.application.routes.url_helpers.edit_user_password_path(initial: true, reset_password_token: token)
           csv << [user.organization.name, user.email, reset_path]
