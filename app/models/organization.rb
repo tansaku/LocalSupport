@@ -161,6 +161,8 @@ class Organization < ActiveRecord::Base
     unless user.valid?
       puts "rejecting #{self.email}"
       return nil
+    else
+      puts "accepting #{self.email}"
     end
     user.skip_confirmation_notification!
     user.reset_password_token=(User.reset_password_token)
