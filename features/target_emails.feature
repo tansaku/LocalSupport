@@ -12,6 +12,7 @@ Feature: targeted email addresses
       | name              | description              | address        | postcode | email               |
       | I love dogs       | loves canines            | 34 pinner road | HA1 4HZ  | freds_boss@dogs.com |
       | I love cats       | loves felines            | 64 pinner road | HA1 4HA  | admin@cats.org      |
+      | I like cats       | likes felines            | 64 pinner road | HA1 4HA  | admin@cats.org      |
       | People are OK too | Ambivalent               | 30 pinner road | HA1 4HZ  | guy@people.com      |
       | I hate animals    | hates birds and beasts   | 84 pinner road | HA1 4HF  |                     |
     Given the following users are registered:
@@ -24,9 +25,9 @@ Feature: targeted email addresses
     And the file "db/csv/aruba.csv" should contain "I love cats,admin@cats.org,/users/password/edit?initial=true&reset_password_token="
     And the file "db/csv/aruba.csv" should not contain "freds_boss@dogs.com"
 
- Scenario: Rake task is run in db with disconnected users
-   Given I run the "db:target_emails" rake task located at "tasks/target_emails"
-   And the file "db/csv/aruba.csv" should not contain "guy@people.com"
+  Scenario: Rake task is run in db with disconnected users
+    Given I run the "db:target_emails" rake task located at "tasks/target_emails"
+    And the file "db/csv/aruba.csv" should not contain "guy@people.com"
 
 
 

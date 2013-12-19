@@ -158,6 +158,7 @@ class Organization < ActiveRecord::Base
   def generate_potential_user
     password = Devise.friendly_token.first(8)
     user = User.new(:email => self.email, :password => password)
+    return nil unless user.valid?
     user.skip_confirmation_notification!
     user.reset_password_token=(User.reset_password_token)
     user.reset_password_sent_at=Time.now
