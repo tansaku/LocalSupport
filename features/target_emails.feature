@@ -9,12 +9,13 @@ Feature: targeted email addresses
       | email            | password | admin  | confirmed_at         |
       | guy@people.com   | pppppppp | false  | 2007-01-01  10:00:00 |
     Given the following organizations exist:
-      | name              | description              | address        | postcode | email               |
-      | I love dogs       | loves canines            | 34 pinner road | HA1 4HZ  | freds_boss@dogs.com |
-      | I love cats       | loves felines            | 64 pinner road | HA1 4HA  | admin@cats.org      |
-      | I like cats       | likes felines            | 64 pinner road | HA1 4HA  | admin@cats.org      |
-      | People are OK too | Ambivalent               | 30 pinner road | HA1 4HZ  | guy@people.com      |
-      | I hate animals    | hates birds and beasts   | 84 pinner road | HA1 4HF  |                     |
+      | name              | description              | address        | postcode | email                |
+      | I love dogs       | loves canines            | 34 pinner road | HA1 4HZ  | freds_boss@dogs.com  |
+      | I like dogs       | likes canines            | 34 pinner road | HA1 4HZ  | freds_boss @dogs.com |
+      | I love cats       | loves felines            | 64 pinner road | HA1 4HA  | admin@cats.org       |
+      | I like cats       | like felines             | 64 pinner road | HA1 4HA  | admin@cats.org       |
+      | People are OK too | Ambivalent               | 30 pinner road | HA1 4HZ  | guy@people.com       |
+      | I hate animals    | hates birds and beasts   | 84 pinner road | HA1 4HF  |                      |
     Given the following users are registered:
       | email         | password | admin  | confirmed_at         |  organization |
       | fred@dogs.com | pppppppp | false  | 2007-01-01  10:00:00 |  I love dogs  |
@@ -28,9 +29,6 @@ Feature: targeted email addresses
   Scenario: Rake task is run in db with disconnected users
     Given I run the "db:target_emails" rake task located at "tasks/target_emails"
     And the file "db/csv/aruba.csv" should not contain "guy@people.com"
-
-
-
 
   Scenario: User resets password 
     Given I run the "db:target_emails" rake task located at "tasks/target_emails"

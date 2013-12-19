@@ -496,6 +496,11 @@ describe Organization do
     end
 
     describe '#generate_potential_user' do
+
+      it 'should create a user account for each email, suppressing confirmation email, and handle invalid users gracefully' do
+
+      end
+
       it 'should create an account for each email, suppressing confirmation email' do
         Organization.stub(:find_users_for_orphan_organizations).and_return [org]
         Devise.stub_chain(:friendly_token, :first).with().with(8).and_return('password')
@@ -511,7 +516,6 @@ describe Organization do
 
       it 'should handle disconnected users gracefully' do
         allow(user).to receive(:organization).and_return(nil)
-
       end
     end
   end

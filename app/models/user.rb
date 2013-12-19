@@ -32,6 +32,7 @@ class User < ActiveRecord::Base
   end
 
   def make_admin_of_org_with_matching_email
+    #org = Organization.where("email = ?",self.email.try(:downcase)).first
     org = Organization.find_by_email self.email
     self.organization = org if org
     save!
