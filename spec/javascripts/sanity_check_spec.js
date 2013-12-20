@@ -12,7 +12,7 @@ describe('dropSelect', function() {
 
     it('display span text is updated when select option is chosen', function() {
         loadFixtures('search_form.html');
-        debugger
+        $('div[data-select=true]').dropSelect();
         var accommodation = $('ul.dropdown-menu > li > a[data-value="7"]');
         expect(accommodation).toHaveText('Accommodation');
         //var spyEvent = spyOnEvent(accommodation, 'click');
