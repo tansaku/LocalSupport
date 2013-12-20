@@ -35,6 +35,7 @@
             var onOptionClick = function(event) {
                 // stop click from causing page refresh
                 event.preventDefault();
+                debugger
                 field.val($(this).attr('data-value'));
                 field.change();
             };
@@ -44,10 +45,10 @@
 
         });
     };
+})(jQuery);
 
-    // invoke on every div element with 'data-select=true'
-    $(function() {
-        $('div[data-select=true]').dropSelect();
-    });
+// invoke on every div element with 'data-select=true'
+$(function() {
+    $('div[data-select=true]').dropSelect();
+});
 
-})(window.jQuery);
