@@ -15,6 +15,7 @@ class User < ActiveRecord::Base
   # prevents mass assignment on other fields not in this list
   attr_accessible :email, :password, :password_confirmation, :remember_me
   belongs_to :organization
+  belongs_to :pending_organization, :class_name => 'Organization', :foreign_key => 'pending_organization_id'
 
   def confirm!
     super
@@ -29,11 +30,21 @@ class User < ActiveRecord::Base
     admin? && !org.nil?
   end
 
+  def can_request_org_admin? org
+    # admin false, pending_organization  pending_organization!=organization org != organization
+    !admin? && organization != org && pending_organization != org
+  end
+
   def make_admin_of_org_with_matching_email
     org = Organization.find_by_email self.email
     self.organization = org if org
     save!
   end
 
+  def promote_to_org_admin
+    # self required with setter method: http://stackoverflow.com/questions/5183664/why-isnt-self-always-needed-in-ruby-rails-activerecord/5183917#5183917
+    self.organization_id = pending_organization_id
+    self.pending_organization_id = nil
+    save!
+  end
 end
-

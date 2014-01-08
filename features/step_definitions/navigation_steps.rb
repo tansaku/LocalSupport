@@ -7,12 +7,40 @@ end
 
 Then /^I should be on the (.*) page$/ do |location|
   case location
-  when "home" then current_path.should == root_path()
+  when "home" then current_path.should == root_path
   when "sign up" then current_path.should == new_user_registration_path
   when "sign in" then current_path.should == new_user_session_path
   when "organizations index" then current_path.should == organizations_path
-  when "charity workers" then current_path.should == users_path
+  when "users" then current_path.should == users_path
+  when "contributors" then current_path.should == contributors_path
   end
+end
+
+Given(/^I try to access "(.*?)" page$/) do |page|
+  visit("/#{page}")
+end
+
+And(/^the page should be titled "(.*?)"$/) do |title|
+  page.should have_selector("title", title)
+end
+
+And (/^I should see a full width layout$/) do
+  within('#content') do
+    page.should have_css('#one_column.span12')
+  end
+end
+
+And (/^I should see a two column layout$/) do
+  within('#content') do
+    page.should have_css('#column1.span6')
+    page.should have_css('#column2.span6')
+  end
+end
+
+
+Then(/^the response status should be 404$/) do
+  page.status_code.should == 404
+  #page.response_code.should be 404
 end
 
 Then(/^I should be on the edit page for "(.*?)"$/) do |permalink|
@@ -60,6 +88,10 @@ end
 Given /^I am on the charity page for "(.*?)"$/ do |name1|
   org1 = Organization.find_by_name(name1)
   visit organization_path org1.id
+  within('#content') do
+    page.should have_css('#column1.span6')
+    page.should have_css('#column2.span6')
+  end
 end
 
 Given /^I am on the edit charity page for "(.*?)"$/ do |name1|
@@ -80,4 +112,15 @@ end
 
 When(/^I visit "(.*?)"$/) do |path|
   visit path
+end
+
+Then(/^the "([^"]*)" should be "([^"]*)"$/) do |id, css_class|
+    page.should have_css("##{id}.#{css_class}")
+end
+
+When(/^I click link with id "([^"]*)"$/) do |id|
+  page.find("##{id}").click
+end
+When(/^javascript is enabled$/) do
+  Capybara.javascript_driver
 end

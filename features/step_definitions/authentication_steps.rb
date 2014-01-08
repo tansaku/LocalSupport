@@ -46,6 +46,7 @@ Given /^the following users are registered:$/ do |users_table|
   users_table.hashes.each do |user|
     user["admin"] = user["admin"] == "true"
     user["organization"] = Organization.find_by_name(user["organization"])
+    user["pending_organization"] = Organization.find_by_name(user["pending_organization"])
     worker = User.create! user, :without_protection => true
   end
 end
@@ -106,3 +107,21 @@ When(/^I sign in as "(.*?)" with password "(.*?)" via email confirmation$/) do |
     And I sign in as "#{email}" with password "#{password}"
   }
 end
+
+Given /^I have a "([^\"]+)" cookie set to "([^\"]+)"$/ do |key, value|
+  headers = {}
+  Rack::Utils.set_cookie_header!(headers, key, value)
+  cookie_string = headers['Set-Cookie']
+  Capybara.current_session.driver.browser.set_cookie(cookie_string)
+end
+
+And(/^cookies are approved$/) do
+  steps %Q{And I have a "cookie_policy_accepted" cookie set to "true"}
+end
+
+And(/^cookies are not approved$/) do
+  steps %Q{And I have a "cookie_policy_accepted" cookie set to "false"}
+end
+
+
+
