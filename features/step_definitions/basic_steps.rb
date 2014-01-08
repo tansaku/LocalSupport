@@ -85,6 +85,15 @@ Given /^I update "(.*?)" charity address to be "(.*?)"( when Google is indispose
   }
 end
 
+Given /^I update "(.*?)" charity website to be "(.*?)"$/ do |name, url|
+  steps %Q{
+    Given I am on the charity page for "#{name}"
+    And I follow "Edit"
+    And I edit the charity website to be "#{url}"
+    And I press "Update Organisation"
+  }
+end
+
 Given /^I have created a new organization$/ do
   steps %Q{
     Given I am on the home page
@@ -102,11 +111,23 @@ Given /^I furtively update "(.*?)" charity address to be "(.*?)"$/ do |name, add
   }
 end
 
+Given /^I edit the charity website to be "(.*?)"$/ do |url|
+  fill_in('organization_website',:with => url)
+end
+
 When /^I edit the charity address to be "(.*?)"$/ do |address|
   stub_request_with_address(address)
   fill_in('organization_address',:with => address)
 end
 
+Then /^the website link for "(.*?)" should have a protocol$/ do |name|
+  steps %{
+    Given I am on the charity page for "#{name}"
+  }
+   website = Organization.find_by_name(name).website
+   website.should =~ /^http\:\/\//
+   expect(page).to have_selector("a[href='#{website}']")
+end
 
 And /^"(.*?)" charity address is "(.*?)"$/ do |name, address|
   org = Organization.find_by_name(name)
@@ -122,12 +143,6 @@ Then /^I should see the donation_info URL for "(.*?)"$/ do |name1|
   org1 = Organization.find_by_name(name1)
   content =  "Donate to #{org1.name} now!"
   page.should have_xpath %Q<//a[@href = "#{org1.donation_info}" and @target = "_blank" and contains(.,'#{content}')]>
-end
-
-Then /^I should not see the donation_info URL for "(.*?)"$/ do |name1|
-  org1 = Organization.find_by_name(name1)
-  page.should_not have_link "Donate to #{org1.name} now!"
-  page.should have_content "We don't yet have any donation link for them."
 end
 
 Then /^the donation_info URL for "(.*?)" should refer to "(.*?)"$/ do |name, href|
@@ -186,10 +201,6 @@ Then /^I should( not)? see a link with text "([^"]*?)"$/ do |negate, link|
   end
 end
 
-Then /^I should not see "(.*?)"$/ do |text|
-  page.should_not have_content text
-end
-
 Then /^I should( not)? see a new organizations link/ do  |negate|
   #page.should_not have_link "New Organization", :href => new_organization_path
   #page.should_not have_selector('a').with_attribute href: new_organization_path
@@ -197,14 +208,24 @@ Then /^I should( not)? see a new organizations link/ do  |negate|
   expect(page).send(expectation_method, have_xpath("//a[@href='#{new_organization_path}']"))
 end
 
-Then /^I should see "((?:(?!before|").)+)"$/ do |text|
-  page.should have_content text
+Then /^I should( not)? see "((?:(?!before|").)+)"$/ do |negate, text|
+  expectation_method = negate ? :not_to : :to
+  expect(page).send(expectation_method, have_content(text))
 end
 
-Then(/^I should see a link or button "(.*?)"$/) do |link|
-  #page.should have_link link, :href => '#'
-  page.should have_selector(:link_or_button, link)
+#Then /^I should not see "(.*?)"$/ do |text|
+#  page.should_not have_content text
+#end
+
+Then(/^I should( not)? see a link or button "(.*?)"$/) do |negate, link|
+  expectation_method = negate ? :not_to : :to
+  expect(page).send(expectation_method, have_selector(:link_or_button, link))
 end
+
+#Then /^I should( not)? see a button saying "(.*?)"$/ do |negate, name|
+#  expectation_method = negate ? :not_to : :to
+#  expect(page).send(expectation_method, have_button("#{name}"))
+#end
 
 # this could be DRYed out (next three methods)
 Then /^I should see contact details for "([^"]*?)"$/ do |text|
@@ -258,7 +279,7 @@ Then /^"(.*?)" org should not exist$/ do |name|
 end
 
 Then /^I debug$/ do
-  breakpoint
+  debugger
   0
 end
 
@@ -274,6 +295,22 @@ end
 Then(/^"(.*?)" should have email "(.*?)"$/) do |org, email|
   Organization.find_by_name(org).email.should eq email
 end
+Given /^"(.*)"'s request status for "(.*)" should be updated appropriately$/ do |email,org_name|
+    steps %Q{
+      And "#{email}"'s request for "#{org_name}" should be persisted
+      And I should see "You have requested admin status for #{Organization.find_by_name(org_name).name}"
+      And I should not see a link or button "This is my organization"
+    }
+end
+
+And /"(.*)"'s request for "(.*)" should be persisted/ do |email,org|
+    user = User.find_by_email(email)
+    org = Organization.find_by_name(org)
+    user.pending_organization_id.should eq org.id
+end
+#Then an email should be sent to "admin@myorg.com"
+#And I should be on the charity page for "#{org}"
+
 
 When(/^the URL should contain "(.*?)"$/) do |string|
   URI.parse(current_url).path.should == '/' + string
@@ -285,7 +322,8 @@ Then(/^I should see "(.*?)" < (.*?) >$/) do |text, tag|
 end
 
 Then(/^I should see "(.*?)" < tagged > with "(.*?)"$/) do |text, tag|
-  collect_tag_contents(page.body, tag).should include(text)
+  page.should have_css(tag, :text => text)
+  #collect_tag_contents(page.body, tag).should include(text)
 end
 
 Then(/^I should see "(.*?)" < linked > to "(.*?)"$/) do |text, url|
@@ -297,4 +335,18 @@ Then(/^"(.*?)" should be persisted for undo purposes$/) do |name|
   org = Organization.with_deleted.find_by_name(name)
   org.should_not be_nil
   Organization.all.should_not include org
+end
+Then(/^I should see a mail-link to "([^"]*)"$/) do |email|
+  page.should have_css("a[href='mailto:#{email}']")
+end
+
+When /^I approve "(.*?)"$/ do |email|
+  visit users_path
+  page.body.should have_content(email)
+  click_link "Approve"
+end
+Then(/^"(.*?)" is a charity admin of "(.*?)"$/) do |user_email, org_name|
+  user = User.find_by_email(user_email)
+  org = Organization.find_by_name(org_name)
+  user.organization.should == org
 end

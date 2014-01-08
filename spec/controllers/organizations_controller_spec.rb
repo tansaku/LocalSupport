@@ -30,7 +30,7 @@ describe OrganizationsController do
     end
 
   end
-  
+
   describe "GET search" do
 
     context 'setting appropriate view vars for all combinations of input' do
@@ -41,6 +41,13 @@ describe OrganizationsController do
         result.should_receive(:to_gmaps4rails).and_return(json)
         result.stub_chain(:page, :per).and_return(result)
         Category.should_receive(:html_drop_down_options).and_return(category_html_options)
+      end
+
+      it "orders search results by most recent" do
+        Organization.should_receive(:order_by_most_recent).and_return(result)
+        result.stub_chain(:search_by_keyword, :filter_by_category).with('test').with(nil).and_return(result)
+        get :search, :q => 'test'
+        assigns(:organizations).should eq([double_organization])
       end
 
       it "sets up appropriate values for view vars: query_term, organizations and json" do
@@ -82,6 +89,7 @@ describe OrganizationsController do
 
       after(:each) do
         response.should render_template 'index'
+        response.should render_template 'layouts/two_columns'
         assigns(:organizations).should eq([double_organization])
         assigns(:json).should eq(json)
         assigns(:category_options).should eq category_html_options
@@ -119,28 +127,41 @@ describe OrganizationsController do
     end
   end
 
-
   describe "GET index" do
     it "assigns all organizations as @organizations" do
       result = [double_organization]
       json='my markers'
       result.should_receive(:to_gmaps4rails).and_return(json)
       Category.should_receive(:html_drop_down_options).and_return(category_html_options)
-      Organization.should_receive(:order).with('updated_at DESC').and_return(result)
+      Organization.should_receive(:order_by_most_recent).and_return(result)
       result.stub_chain(:page, :per).and_return(result)
       get :index
       assigns(:organizations).should eq(result)
       assigns(:json).should eq(json)
+      response.should render_template 'layouts/two_columns'
     end
   end
 
   describe "GET show" do
+    before(:each) do
+      @user = double("User")
+      Organization.stub(:find).with('37') { double_organization }
+      @user.stub(:can_edit?).and_return
+      @user.stub(:can_request_org_admin?)
+      controller.stub(:current_user).and_return(@user)
+    end
+
+    it 'should use a two_column layout' do
+      get :show, :id => '37'
+      response.should render_template 'layouts/two_columns'
+    end
+
     it "assigns the requested organization as @organization and appropriate json" do
       json='my markers'
       @org = double_organization
       @org.should_receive(:to_gmaps4rails).and_return(json)
-      Organization.should_receive(:find).with("37") { @org }
-      get :show, :id => "37"
+      Organization.should_receive(:find).with('37') { @org }
+      get :show, :id => '37'
       assigns(:organization).should be(double_organization)
       assigns(:json).should eq(json)
     end
@@ -168,7 +189,29 @@ describe OrganizationsController do
       it 'when not signed in editable flag is nil' do
         controller.stub(:current_user).and_return(nil)
         get :show, :id => 37
-        expect(assigns(:editable)).to eq nil
+        expect(assigns(:editable)).to be_false
+      end
+    end
+
+    context "grabbable flag is assigned to match user permission" do
+      it 'assigns grabbable to true when user can request org admin status' do
+        @user.stub(:can_edit?)
+        @user.should_receive(:can_request_org_admin?).with(double_organization).and_return(true)
+        controller.stub(:current_user).and_return(@user)
+        get :show, :id => 37
+        assigns(:grabbable).should be(true)
+      end
+      it 'assigns grabbable to false when user cannot request org admin status' do
+        @user.stub(:can_edit?)
+        @user.should_receive(:can_request_org_admin?).with(double_organization).and_return(false)
+        controller.stub(:current_user).and_return(@user)
+        get :show, :id => 37
+        assigns(:grabbable).should be(false)
+      end
+      it 'when not signed in grabbable flag is nil' do
+        controller.stub(:current_user).and_return(nil)
+        get :show, :id => 37
+        expect(assigns(:grabbable)).to be_false
       end
     end
 
@@ -208,12 +251,17 @@ describe OrganizationsController do
         user = double("User")
         request.env['warden'].stub :authenticate! => user
         controller.stub(:current_user).and_return(user)
+        Organization.stub(:new) { double_organization }
       end
 
       it "assigns a new organization as @organization" do
-        Organization.stub(:new) { double_organization }
         get :new
         assigns(:organization).should be(double_organization)
+      end
+
+      it 'should use a two_column layout' do
+        get :new
+        response.should render_template 'layouts/two_columns'
       end
     end
 
@@ -235,9 +283,10 @@ describe OrganizationsController do
       end
 
       it "assigns the requested organization as @organization" do
-        Organization.stub(:find).with("37") { double_organization }
-        get :edit, :id => "37"
+        Organization.stub(:find).with('37') { double_organization }
+        get :edit, :id => '37'
         assigns(:organization).should be(double_organization)
+        response.should render_template 'layouts/two_columns'
       end
     end
     context "while signed in as user who cannot edit" do
@@ -249,15 +298,15 @@ describe OrganizationsController do
       end
 
       it "redirects to organization view" do
-        Organization.stub(:find).with("37") { double_organization }
-        get :edit, :id => "37"
+        Organization.stub(:find).with('37') { double_organization }
+        get :edit, :id => '37'
         response.should redirect_to organization_url(37)
       end
     end
     #TODO: way to dry out these redirect specs?
     context "while not signed in" do
       it "redirects to sign-in" do
-        get :edit, :id => 37
+        get :edit, :id => '37'
         expect(response).to redirect_to new_user_session_path
       end
     end
@@ -269,7 +318,7 @@ describe OrganizationsController do
         user = double("User")
         request.env['warden'].stub :authenticate! => user
         controller.stub(:current_user).and_return(user)
-	user.should_receive(:admin?).and_return(true)
+        user.should_receive(:admin?).and_return(true)
       end
 
       describe "with valid params" do
@@ -287,6 +336,8 @@ describe OrganizationsController do
       end
 
       describe "with invalid params" do
+        after(:each) { response.should render_template 'layouts/two_columns' }
+
         it "assigns a newly created but unsaved organization as @organization" do
           Organization.stub(:new).with({'these' => 'params'}) { double_organization(:save => false) }
           post :create, :organization => {'these' => 'params'}
@@ -314,28 +365,30 @@ describe OrganizationsController do
         user = double("User")
         request.env['warden'].stub :authenticate! => user
         controller.stub(:current_user).and_return(user)
-	user.should_receive(:admin?).and_return(false)
+        user.should_receive(:admin?).and_return(false)
       end
 
       describe "with valid params" do
-         it "refuses to create a new organization" do
-	   # stubbing out Organization to prevent new method from calling Gmaps APIs
-           Organization.stub(:new).with({'these' => 'params'}) { double_organization(:save => true) }
-	   Organization.should_not_receive :new
-	   post :create, :organization => {'these' => 'params'}
-         end
-         it "redirects to the organizations index" do
-           Organization.stub(:new).with({'these' => 'params'}) { double_organization(:save => true) }
-	   post :create, :organization => {'these' => 'params'}
-	   expect(response).to redirect_to organizations_path           
-	 end
-	 it "assigns a flash refusal" do
-           Organization.stub(:new).with({'these' => 'params'}) { double_organization(:save => true) }
-	   post :create, :organization => {'these' => 'params'}
-	   expect(flash[:notice]).to eq("You don't have permission")
-	 end
+        it "refuses to create a new organization" do
+          # stubbing out Organization to prevent new method from calling Gmaps APIs
+          Organization.stub(:new).with({'these' => 'params'}) { double_organization(:save => true) }
+          Organization.should_not_receive :new
+          post :create, :organization => {'these' => 'params'}
+        end
+
+        it "redirects to the organizations index" do
+          Organization.stub(:new).with({'these' => 'params'}) { double_organization(:save => true) }
+          post :create, :organization => {'these' => 'params'}
+          expect(response).to redirect_to organizations_path           
+        end
+
+        it "assigns a flash refusal" do
+          Organization.stub(:new).with({'these' => 'params'}) { double_organization(:save => true) }
+          post :create, :organization => {'these' => 'params'}
+          expect(flash[:notice]).to eq("You don't have permission")
+        end
       end
-# not interested in invalid params 
+      # not interested in invalid params
     end
   end
 
@@ -349,12 +402,11 @@ describe OrganizationsController do
       end
 
       describe "with valid params" do
-
         it "updates org for e.g. donation_info url" do
           double = double_organization(:id => 37, :model_name => 'Organization')
-          Organization.should_receive(:find).with("37"){double}
+          Organization.should_receive(:find).with('37'){double}
           double_organization.should_receive(:update_attributes_with_admin).with({'donation_info' => 'http://www.friendly.com/donate', 'admin_email_to_add' => nil})
-          put :update, :id => "37", :organization => {'donation_info' => 'http://www.friendly.com/donate'}
+          put :update, :id => '37', :organization => {'donation_info' => 'http://www.friendly.com/donate'}
         end
 
         it "assigns the requested organization as @organization" do
@@ -371,6 +423,8 @@ describe OrganizationsController do
       end
 
       describe "with invalid params" do
+        after(:each) { response.should render_template 'layouts/two_columns' }
+
         it "assigns the organization as @organization" do
           Organization.stub(:find) { double_organization(:update_attributes_with_admin => false) }
           put :update, :id => "1"
@@ -413,7 +467,7 @@ describe OrganizationsController do
         end
       end
     end
-    
+
     context "while not signed in" do
       it "redirects to sign-in" do
         put :update, :id => "1", :organization => {'these' => 'params'}
@@ -430,8 +484,8 @@ describe OrganizationsController do
         request.env['warden'].stub :authenticate! => user
         controller.stub(:current_user).and_return(user)
       end
-      it "destroys the requested organization" do
-        Organization.should_receive(:find).with("37") { double_organization }
+      it "destroys the requested organization and redirect to organization list" do
+        Organization.should_receive(:find).with('37') { double_organization }
         double_organization.should_receive(:destroy)
         delete :destroy, :id => "37"
       end
@@ -448,9 +502,9 @@ describe OrganizationsController do
         request.env['warden'].stub :authenticate! => user
         controller.stub(:current_user).and_return(user)
       end
-      it "does not destroy the requested organization" do
+      it "does not destroy the requested organization but redirects to organization home page" do
         double = double_organization
-        Organization.should_not_receive(:find).with("37"){double}
+        Organization.should_not_receive(:find).with('37'){double}
         double.should_not_receive(:destroy)
         delete :destroy, :id => "37"
       end
@@ -462,10 +516,9 @@ describe OrganizationsController do
     end
     context "while not signed in" do
       it "redirects to sign-in" do
-        delete :destroy, :id => "37"
+        delete :destroy, :id => '37'
         expect(response).to redirect_to new_user_session_path
       end
     end
   end
-
 end
