@@ -146,9 +146,10 @@ describe OrganizationsController do
     before(:each) do
       @user = double("User")
       Organization.stub(:find).with('37') { double_organization }
-      @user.stub(:can_edit?).and_return
-      @user.stub(:can_request_org_admin?)
       controller.stub(:current_user).and_return(@user)
+      @user.stub(:can_edit?)
+      @user.stub(:can_delete?)
+      @user.stub(:can_request_org_admin?)
     end
 
     it 'should use a two_column layout' do
@@ -172,6 +173,7 @@ describe OrganizationsController do
         @user = double("User")
         controller.stub(:current_user).and_return(@user)
         @user.stub(:can_delete?).and_return(true)
+        @user.stub(:can_request_org_admin?)
       end
 
       it "user with permission leads to editable flag true" do
@@ -222,6 +224,7 @@ describe OrganizationsController do
         @user = double("User")
         controller.stub(:current_user).and_return(@user)
         @user.stub(:can_edit?).and_return(true)
+        @user.stub(:can_request_org_admin?)
       end
 
       it "user with permission leads to deletable flag true" do
