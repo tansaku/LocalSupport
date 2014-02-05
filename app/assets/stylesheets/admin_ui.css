@@ -17,6 +17,10 @@ ul.nav-tabs {
     width: 100%;
 }
 
+[type=checkbox] { display: none; }
+label { cursor: pointer; }
+[class*=icon-].icon-fixed-width { text-align: left; }
+
 .UI-header {
     position: relative;
     margin: -20px 0;

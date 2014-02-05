@@ -15,11 +15,8 @@
   </li>
   <li><a href="#">With Generated Accounts</a></li>
 </ul>
-<!--<div class="UI-header">-->
-
-<!--</div>-->
+<!--<div class="UI-header"></div>-->
 <div class="UI-body">
-
   <div id="toolbar" class="navbar">
     <div class="navbar-inner">
       <!--<a class="brand" href="#">Actions</a>-->
@@ -60,7 +57,9 @@
             <% if organization.users.any? %>
                 <%= organization.users.first.reset_password_token %>
             <% else %>
-                <i class="icon-fixed-width icon-check"></i>                <span></span>
+                <label>
+                  <input type="checkbox" checked /><i class="icon-fixed-width icon-check"></i>
+                </label>
             <% end %>
           </td>
         </tr>

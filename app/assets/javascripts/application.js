@@ -14,4 +14,5 @@ $(function() {
     $('#toolbar').affix({
         offset: { top: $('#toolbar').offset().top }
     })
+    $("[type=checkbox]").awesome_checkbox();
 });
