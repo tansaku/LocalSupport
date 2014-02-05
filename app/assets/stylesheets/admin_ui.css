@@ -13,6 +13,7 @@ ul.nav-tabs {
 #toolbar.affix {
     position: fixed;
     top: 0;
+    left: 0;
     width: 100%;
 }
 
