@@ -11,4 +11,7 @@
 $(function() {
     $('#TIMO').TIMO();
     $('.generate_user').generate_user();
+    $('#toolbar').affix({
+        offset: { top: $('#toolbar').offset().top }
+    })
 });

@@ -10,6 +10,12 @@ ul.nav-tabs {
     border-bottom: none;
 }
 
+#toolbar.affix {
+    position: fixed;
+    top: 0;
+    width: 100%;
+}
+
 .UI-header {
     position: relative;
     margin: -20px 0;

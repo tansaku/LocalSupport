@@ -1,3 +1,13 @@
+<div class="navbar">
+  <div class="navbar-inner">
+    <a class="brand" href="#">Admin Dashboard</a>
+    <ul class="nav">
+      <li class="active"><a href="#">Organizations</a></li>
+      <li><a href="#">Users</a></li>
+    </ul>
+  </div>
+</div>
+
 <ul class="nav nav-tabs">
   <li><a href="#">All</a></li>
   <li class="active">
@@ -10,15 +20,22 @@
 <!--</div>-->
 <div class="UI-body">
 
-  <div class="navbar">
+  <div id="toolbar" class="navbar">
     <div class="navbar-inner">
       <!--<a class="brand" href="#">Actions</a>-->
-
+      <form class="navbar-search pull-left">
+        <input type="text" class="search-query" placeholder="Search">
+      </form>
       <div class="btn-group" style="float: right">
-        <button class="btn" data-toggle="button">Select All</button>
-        <button class="btn" data-toggle="button">Select None</button>
+        <button class="btn" data-toggle="button">
+          <i class="fa fa-group"></i>
+          Generate Users
+        </button>
+        <button class="btn" data-toggle="button">
+          <i class="fa fa-check-square"></i>
+          Select All
+        </button>
       </div>
-      <button class="btn" style="float: right">Generate Users</button>
 
       <!--<ul class="nav" >-->
         <!--<li class="active"><a href="#">Organizations</a></li>-->
@@ -31,9 +48,7 @@
     <tr>
       <th>Name</th>
       <th>Email</th>
-      <th style="text-align: center;">
-        Select All
-      </th>
+      <th style="text-align: center;"> </th>
     </tr>
     </thead>
     <tbody>
@@ -45,8 +60,7 @@
             <% if organization.users.any? %>
                 <%= organization.users.first.reset_password_token %>
             <% else %>
-                <%= link_to(fa_icon 'plus', class: 'generate_user btn btn-default') %>
-                <span></span>
+                <i class="icon-fixed-width icon-check"></i>                <span></span>
             <% end %>
           </td>
         </tr>
