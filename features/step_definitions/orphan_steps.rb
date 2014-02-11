@@ -21,3 +21,14 @@ Then(/^I should see "([^"]*)" in the response field for "([^"]*)"$/) do |msg, or
   response = within("##{id}") { find('.response') }
   raise "Expected '#{msg}' but instead found '#{response.text}'" unless (response.text == msg)
 end
+
+Given(/^I check the box for "(.*?)"$/) do |org_name|
+  org = Organization.find_by_name(org_name)
+  id = org.id
+  within("##{id}") { find('input').set(true) }
+end
+
+When(/^I click the Generate Users button$/) do
+    pending # express the regexp above with the code you wish you had
+end
+

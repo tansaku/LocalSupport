@@ -60,6 +60,7 @@ end
 
 When /^I click id "(.*)"$/ do |id|
   find("##{id}").click
+  wait_for_ajax
 end
 
 When /^(?:|I )follow "([^"]*)"$/ do |link|
