@@ -10,9 +10,8 @@
 //= require_tree .
 $(function() {
     $('#TIMO').TIMO();
-    $('.generate_user').generate_user();
+    $('#generate_users').generate_users();
     $('#toolbar').affix({
         offset: { top: $('#toolbar').offset().top }
     })
-    $("[type=checkbox]").awesome_checkbox();
 });

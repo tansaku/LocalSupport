@@ -6,7 +6,7 @@
         <input type="text" class="search-query" placeholder="Search">
       </form>
       <div class="btn-group" style="float: right">
-        <button class="btn" data-toggle="button">
+        <button class="btn" data-toggle="button" id="generate_users">
           <i class="fa fa-group"></i>
           Generate Users
         </button>
@@ -26,7 +26,6 @@
     </tr>
     </thead>
     <tbody>
-    <%= form_tag do %>
         <% @orphans.each do |organization| %>
             <tr id="<%= organization.id %>">
               <td><%= link_to organization.name, organization_path(organization) %></td>
@@ -35,12 +34,10 @@
                 <% if organization.users.any? %>
                     <%= organization.users.first.reset_password_token %>
                 <% else %>
-                    <%= check_box_tag 'organization_id', organization.id %>
+                    <input type="checkbox" value="<%= organization.id %>" />
                 <% end %>
-              </td>
-            </tr>
+                </tr>
         <% end %>
-    <% end %>
     </tbody>
   </table>
 </div>
