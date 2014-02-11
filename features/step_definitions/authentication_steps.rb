@@ -51,6 +51,11 @@ Given /^the following users are registered:$/ do |users_table|
   end
 end
 
+Given(/^the admin made a preapproved user for "(.*?)"$/) do |organization_name|
+  org = Organization.find_by_name(organization_name)
+  org.generate_potential_user
+end
+
 Given /^that I am logged in as any user$/ do
   steps %Q{
      Given the following users are registered:
@@ -113,5 +118,5 @@ end
 
 Given(/^I click on the link in the email to "([^\"]+)"$/) do  |email|
   user = User.find_by_email email
-  visit '/users/password/edit?reset_password_token=' + user.reset_password_token
+  visit retrieve_password_url(user.reset_password_token)
 end

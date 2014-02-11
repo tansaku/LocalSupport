@@ -1,6 +1,7 @@
 class OrphansController < ApplicationController
   layout 'full_width'
   before_filter :authorize
+  include OrphansHelper
 
   def index
     @orphans = Organization.not_null_email.null_users
