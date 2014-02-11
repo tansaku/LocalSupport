@@ -38,7 +38,7 @@ describe OrphansController do
       error.stub_chain(:full_messages, :first).and_return('Ready to roll out!')
       post :create, { organizations: %w(1 3) }
       res = ActiveSupport::JSON.decode(response.body)
-      res.should eq({'1' => 'Ready to roll out!', '3' => 'Ready to roll out!'})
+      res.should eq({'1' => 'Error: Ready to roll out!', '3' => 'Error: Ready to roll out!'})
     end
 
     it 'elicits the reset password token otherwise' do
@@ -47,7 +47,7 @@ describe OrphansController do
       user.stub :reset_password_token => 'I-dentify target!'
       post :create, { organizations: %w(1 3) }
       res = ActiveSupport::JSON.decode(response.body)
-      res.should eq({'1' => 'I-dentify target!', '3' => 'I-dentify target!'})
+      res.should eq({'1' => 'http://test.host/users/password/edit?reset_password_token=I-dentify+target%21', '3' => 'http://test.host/users/password/edit?reset_password_token=I-dentify+target%21'})
     end
   end
 end

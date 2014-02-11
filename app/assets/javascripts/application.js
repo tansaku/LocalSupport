@@ -7,8 +7,8 @@
 //= require jquery
 //= require jquery_ujs
 //= require twitter/bootstrap
-//= require_tree .
 //= require bootstrap-sortable
+//= require_tree .
 
 $(function() {
     $('#TIMO').TIMO();

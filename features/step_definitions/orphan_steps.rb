@@ -22,10 +22,7 @@ Given(/^I check the box for "(.*?)"$/) do |org_name|
   within("##{id}") { find('input').set(true) }
 end
 
-Then(/^all the checkboxes should be checked$/) do |check|
-  debugger
-end
-
-Then(/^all the checkboxes should be unchecked$/) do
-    pending # express the regexp above with the code you wish you had
+Then(/^all the checkboxes should be (un)?checked$/) do |negate|
+  expectation = negate ? :should_not : :should
+  all('input[type="checkbox"]').each { |box| box.send(expectation, be_checked) }
 end
