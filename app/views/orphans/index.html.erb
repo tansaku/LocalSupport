@@ -22,24 +22,24 @@
     <tr>
       <th>Name</th>
       <th>Email</th>
-      <th style="text-align: center;"> </th>
+      <th style="text-align: center;"></th>
     </tr>
     </thead>
     <tbody>
-    <% @orphans.each do |organization| %>
-        <tr id="<%= organization.id %>">
-          <td><%= link_to organization.name, organization_path(organization) %></td>
-          <td><%= organization.email %></td>
-          <td class="response" style="text-align: center;">
-            <% if organization.users.any? %>
-                <%= organization.users.first.reset_password_token %>
-            <% else %>
-                <label>
-                  <input type="checkbox" checked /><i class="icon-fixed-width icon-check"></i>
-                </label>
-            <% end %>
-          </td>
-        </tr>
+    <%= form_tag do %>
+        <% @orphans.each do |organization| %>
+            <tr id="<%= organization.id %>">
+              <td><%= link_to organization.name, organization_path(organization) %></td>
+              <td><%= organization.email %></td>
+              <td class="response" style="text-align: center;">
+                <% if organization.users.any? %>
+                    <%= organization.users.first.reset_password_token %>
+                <% else %>
+                    <%= check_box_tag 'organization_id', organization.id %>
+                <% end %>
+              </td>
+            </tr>
+        <% end %>
     <% end %>
     </tbody>
   </table>
