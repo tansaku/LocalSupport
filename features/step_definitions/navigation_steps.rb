@@ -149,4 +149,5 @@ end
 
 And(/^I click tableheader "([^"]*)"$/) do |name|
   find('th', :text => "#{name}").click
+  wait_for_ajax
 end
