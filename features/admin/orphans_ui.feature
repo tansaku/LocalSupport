@@ -31,6 +31,15 @@ Feature: Orphans UI
     Then I should see "Error: Email has already been taken" in the response field for "The Same Email Org"
 
   @javascript
+  Scenario: Admin can generate link but only for unique email
+    Given I am signed in as an admin
+    And I visit "/orphans"
+    And I press "Select All"
+    Then all the checkboxes should be checked
+    When I press "Select All"
+    Then all the checkboxes should be unchecked
+
+  @javascript
   Scenario: Admin should be notified when email is invalid
     Given I am signed in as an admin
     And I visit "/orphans"

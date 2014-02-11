@@ -1,9 +1,3 @@
-When(/^I click Generate User button for "([^"]*)"$/) do |org_name|
-  id = Organization.find_by_name(org_name).id
-  within("##{id}") { find('.generate_user').click }
-  sleep 1
-end
-
 Then(/^a token should be in the response field for "([^"]*)"$/) do |org_name|
   org = Organization.find_by_name(org_name)
   id = org.id
@@ -28,7 +22,10 @@ Given(/^I check the box for "(.*?)"$/) do |org_name|
   within("##{id}") { find('input').set(true) }
 end
 
-When(/^I click the Generate Users button$/) do
-    pending # express the regexp above with the code you wish you had
+Then(/^all the checkboxes should be checked$/) do |check|
+  debugger
 end
 
+Then(/^all the checkboxes should be unchecked$/) do
+    pending # express the regexp above with the code you wish you had
+end
