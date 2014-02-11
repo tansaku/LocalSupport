@@ -2,6 +2,10 @@ require 'webmock/cucumber'
 require 'uri-handler'
 include ApplicationHelper
 
+Then(/^the organization menu has a dropdown menu with a (.*?) link$/) do |link|
+ within('#menuOrgs > ul.dropdown-menu') {expect(find("a", text: link)).not_to be_nil}
+end
+
 Then /^I should see permission denied$/ do
   page.should have_content PERMISSION_DENIED
 end
