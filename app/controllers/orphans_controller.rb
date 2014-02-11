@@ -13,7 +13,7 @@ class OrphansController < ApplicationController
   def create
     res = params[:organizations].reduce({}) do |hash, id|
       user = Organization.find_by_id(id).generate_potential_user
-      msg = user.errors.any? ? user.errors.full_messages.first : user.reset_password_token
+      msg = user.errors.any? ? user.errors.full_messages.first : retrieve_password_url(user.reset_password_token)
       hash[id] = msg
       hash
     end
