@@ -31,4 +31,14 @@
             return false
         });
     };
+    $.fn.select_all = function () {
+        var that = $(this);
+        that.click(function () {
+            var active = that.hasClass('active'),
+                checks = $('input:checkbox');
+            checks.each(function () {
+                $(this).prop('checked', !active);
+            });
+        });
+    };
 })(jQuery);
