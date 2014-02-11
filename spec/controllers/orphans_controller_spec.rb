@@ -26,27 +26,28 @@ describe OrphansController do
   describe '#create' do
     let(:error) { double('ActiveModel::Errors') }
     before(:each) do
-      Organization.should_receive(:find_by_id).with('3').and_return(org)
-      org.should_receive(:generate_potential_user).and_return(user)
+      request.accept = 'application/json'
+      Organization.stub :find_by_id => org
+      org.stub :generate_potential_user => user
     end
 
     it 'parses errors if there are any' do
-      user.should_receive(:errors).twice.and_return(error)
-      error.should_receive(:any?).and_return(true)
-      error.should_receive(:full_messages)
-      error.stub_chain(:full_messages, :first).and_return('just calling to say i love you')
+      user.stub :errors => error
+      error.stub :any? => true
+      error.stub :full_messages
+      error.stub_chain(:full_messages, :first).and_return('Ready to roll out!')
+      post :create, { organizations: %w(1 3) }
+      res = ActiveSupport::JSON.decode(response.body)
+      res.should eq({'1' => 'Ready to roll out!', '3' => 'Ready to roll out!'})
     end
 
     it 'elicits the reset password token otherwise' do
-      user.should_receive(:errors).once.and_return(error)
-      error.should_receive(:any?).and_return(false)
-      user.should_receive(:reset_password_token).and_return('just calling to say i love you')
-    end
-
-    after(:each) do
-      request.accept = 'application/json'
-      post :create, { id: '3' }
-      ActiveSupport::JSON.decode(response.body).should eq('just calling to say i love you')
+      user.stub :errors => error
+      error.stub :any? => false
+      user.stub :reset_password_token => 'I-dentify target!'
+      post :create, { organizations: %w(1 3) }
+      res = ActiveSupport::JSON.decode(response.body)
+      res.should eq({'1' => 'I-dentify target!', '3' => 'I-dentify target!'})
     end
   end
 end
