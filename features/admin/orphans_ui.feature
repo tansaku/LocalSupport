@@ -28,14 +28,15 @@ Feature: Orphans UI
     And I check the box for "The Same Email Org"
     When I click id "generate_users"
     Then a token should be in the response field for "The Organization"
-    Then I should see "Email has already been taken" in the response field for "The Same Email Org"
+    Then I should see "Error: Email has already been taken" in the response field for "The Same Email Org"
 
   @javascript
   Scenario: Admin should be notified when email is invalid
     Given I am signed in as an admin
     And I visit "/orphans"
-    When I click Generate User button for "Crazy Email Org"
-    Then I should see "Email is invalid" in the response field for "Crazy Email Org"
+    And I check the box for "Crazy Email Org"
+    When I click id "generate_users"
+    Then I should see "Error: Email is invalid" in the response field for "Crazy Email Org"
 
   Scenario: As a non-admin trying to access orphans index
     Given I am signed in as a non-admin
