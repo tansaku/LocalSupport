@@ -4,6 +4,10 @@
     background-color: rgb(247, 247, 249);
 }
 
+.navbar .btn-group {
+    margin-top: 6px;
+}
+
 ul.nav-tabs {
     padding-left: 8px;
     margin-bottom: 0;

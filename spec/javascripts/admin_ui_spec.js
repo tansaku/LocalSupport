@@ -24,10 +24,10 @@ describe('Admin UI - orphan organization page', function () {
         });
         it('overwrites checkbox with server response', function () {
             spyOn($, "ajax").andCallFake(function (params) { 
-          params.success({
-              1: 'I have returned.',
-              3: 'Galahoslos?'
-          });
+              params.success({
+                  1: 'I have returned.',
+                  3: 'Galahoslos?'
+                });
             });
             generate_users.click();
             expect($('#1 .response')).toHaveHtml('I have returned.');
@@ -37,10 +37,10 @@ describe('Admin UI - orphan organization page', function () {
         });
         it('color codes the server responses', function () {
             spyOn($, "ajax").andCallFake(function (params) { 
-          params.success({
-              1: 'Error: Drop your weapon! You have 15 seconds to comply.',
-              3: 'Error: Five... Four... Three. Two. One! (fires phase disruptor)'
-          });
+                params.success({
+                    1: 'Error: Drop your weapon! You have 15 seconds to comply.',
+                    3: 'Error: Five... Four... Three. Two. One! (fires phase disruptor)'
+                });
             });
             generate_users.click();
             expect($('#1')).toHaveClass('alert');
