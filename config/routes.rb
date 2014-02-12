@@ -4,8 +4,9 @@ LocalSupport::Application.routes.draw do
 
   get 'contributors' => 'contributors#show'
   match 'organizations/search' => 'organizations#search'
-  get '/admin/organizations/without_users' => 'admins#organizations_without_users'
-  post '/admin/organizations/without_users' => 'admins#organizations_without_users_create'
+
+  get '/organization_reports/without_users' => 'organization_reports#without_users_index'
+  post '/organization_reports/without_users' => 'organization_reports#without_users_create'
 
   resources :users, only: [:index, :update]
 

@@ -21,7 +21,7 @@ describe('Admin UI - orphan organization page', function () {
             expect(args.data).toEqual({ organizations: ['1', '3'] });
             expect(args.dataType).toBe('json');
             expect(args.type).toBe('POST');
-            expect(args.url).toBe('/orphans')
+            expect(args.url).toBe('/organization_reports/without_users')
         });
         it('overwrites checkbox with server response', function () {
             spyOn($, "ajax").and.callFake(function (params) { 

@@ -11,7 +11,7 @@
             });
             $.ajax({
                 type: 'POST',
-                url: '/admin/organizations/without_users',
+                url: '/organization_reports/without_users',
                 data: { organizations: ids },
                 dataType: 'json',
                 success: function (data) {
