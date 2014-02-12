@@ -16,14 +16,15 @@ describe('Admin UI - orphan organization page', function () {
         it('makes an ajax request when clicked', function () {
             spyOn($, "ajax");
             generate_users.click();
-            var args = $.ajax.mostRecentCall.args[0];
+            expect($.ajax.calls.count()).toBe(1);
+            var args = $.ajax.calls.mostRecent().args[0];
             expect(args.data).toEqual({ organizations: ['1', '3'] });
-            expect(args.dataType).toEqual('json');
-            expect(args.type).toEqual('POST');
-            expect(args.url).toEqual('/orphans')
+            expect(args.dataType).toBe('json');
+            expect(args.type).toBe('POST');
+            expect(args.url).toBe('/orphans')
         });
         it('overwrites checkbox with server response', function () {
-            spyOn($, "ajax").andCallFake(function (params) { 
+            spyOn($, "ajax").and.callFake(function (params) { 
               params.success({
                   1: 'I have returned.',
                   3: 'Galahoslos?'
@@ -36,7 +37,7 @@ describe('Admin UI - orphan organization page', function () {
             expect($('#4 .response')).toHaveHtml('<input type="checkbox" value="4" />');
         });
         it('color codes the server responses', function () {
-            spyOn($, "ajax").andCallFake(function (params) { 
+            spyOn($, "ajax").and.callFake(function (params) { 
                 params.success({
                     1: 'Error: Drop your weapon! You have 15 seconds to comply.',
                     3: 'Error: Five... Four... Three. Two. One! (fires phase disruptor)'
