@@ -7,7 +7,6 @@ LocalSupport::Application.routes.draw do
   get '/admin/organizations/without_users' => 'admins#organizations_without_users'
   post '/admin/organizations/without_users' => 'admins#organizations_without_users_create'
 
-  resources :orphans, only: [:index, :create]
   resources :users, only: [:index, :update]
 
   resources :pages
