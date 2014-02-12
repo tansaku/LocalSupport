@@ -11,7 +11,7 @@
             });
             $.ajax({
                 type: 'POST',
-                url: '/orphans',
+                url: '/admin/organizations/without_users',
                 data: { organizations: ids },
                 dataType: 'json',
                 success: function (data) {

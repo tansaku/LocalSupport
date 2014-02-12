@@ -23,7 +23,7 @@ Feature: Orphans UI
   @javascript
   Scenario: Admin can generate link but only for unique email
     Given I am signed in as an admin
-    And I visit "/orphans"
+    And I visit "/admin/organizations/without_users"
     And I check the box for "The Organization"
     And I check the box for "The Same Email Org"
     When I click id "generate_users"
@@ -33,7 +33,7 @@ Feature: Orphans UI
   @javascript
   Scenario: Select All button toggles all checkboxes
     Given I am signed in as an admin
-    And I visit "/orphans"
+    And I visit "/admin/organizations/without_users"
     And I press "Select All"
     Then all the checkboxes should be checked
     When I press "Select All"
@@ -42,14 +42,14 @@ Feature: Orphans UI
   @javascript
   Scenario: Admin should be notified when email is invalid
     Given I am signed in as an admin
-    And I visit "/orphans"
+    And I visit "/admin/organizations/without_users"
     And I check the box for "Crazy Email Org"
     When I click id "generate_users"
     Then I should see "Error: Email is invalid" in the response field for "Crazy Email Org"
 
   Scenario: As a non-admin trying to access orphans index
     Given I am signed in as a non-admin
-    And I visit "/orphans"
+    And I visit "/admin/organizations/without_users"
     Then I should be on the home page
     And I should see "You must be signed in as an admin to perform this action!"
 
@@ -64,7 +64,7 @@ Feature: Orphans UI
   @javascript
   Scenario: Table columns should be sortable
     Given I am signed in as an admin
-    And I visit "/orphans"
+    And I visit "/admin/organizations/without_users"
     And I click tableheader "Name"
     Then I should see "Crazy Email Org" before "Yet Another Org"
     When I click tableheader "Name"
