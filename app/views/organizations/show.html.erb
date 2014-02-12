@@ -1,3 +1,7 @@
+<% content_for :scripts do %>
+    <%= javascript_include_tag 'this_is_my_org' %>
+<% end %>
+
 <div class="row">
   <h3>
     <%= @organization.name %>
@@ -6,8 +10,6 @@
   <p>
     <%= @organization.description %>
   </p>
-
-
         <h4>
           Contact information
         </h4>

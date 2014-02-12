@@ -7,14 +7,9 @@
 //= require jquery
 //= require jquery_ujs
 //= require twitter/bootstrap
-//= require bootstrap-sortable
-//= require_tree .
+//= require_tree ./gmaps4rails
+//= require_tree ./global
 
 $(function() {
-    $('#TIMO').TIMO();
-    $('#generate_users').generate_users();
-    $('#select_all').select_all();
-    $('#toolbar').affix({
-        offset: { top: $('#toolbar').offset().top }
-    })
+    // global function invocation
 });

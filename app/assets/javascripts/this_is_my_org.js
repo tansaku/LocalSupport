@@ -18,3 +18,7 @@
         });
     }
 })(jQuery);
+
+$(function () {
+    $('#TIMO').TIMO();
+});
