@@ -14,7 +14,7 @@ class UserReportsController < ApplicationController
       redirect_to :status => 404 and return unless current_user.admin?
       user.promote_to_org_admin
       flash[:notice] = "You have approved #{user.email}."
-      redirect_to '/user_reports/pending_admins_index'
+      redirect_to '/user_reports/pending_admins'
     end
   end
 

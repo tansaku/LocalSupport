@@ -48,7 +48,7 @@ describe UserReportsController do
       end
       it 'redirect to index page after update succeeds' do
         put :update, {:id => '4'}
-        response.should redirect_to '/user_reports/pending_admins_index'
+        response.should redirect_to '/user_reports/pending_admins'
       end
       it 'shows a flash telling which user got approved' do
         put :update, {:id => '4'}
