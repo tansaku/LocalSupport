@@ -8,7 +8,7 @@ LocalSupport::Application.routes.draw do
   get '/organization_reports/without_users' => 'organization_reports#without_users_index'
   post '/organization_reports/without_users' => 'organization_reports#without_users_create'
 
-  get '/user_reports/pending_admins_index' => 'user_reports#pending_admins_index'
+  get '/user_reports/pending_admins' => 'user_reports#pending_admins_index'
   put '/user_reports/update' => 'user_reports#update', as: :user
 
   resources :pages

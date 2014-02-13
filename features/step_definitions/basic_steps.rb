@@ -2,8 +2,12 @@ require 'webmock/cucumber'
 require 'uri-handler'
 include ApplicationHelper
 
-Then(/^the organization menu has a dropdown menu with a (.*?) link$/) do |link|
- within('#menuOrgs > ul.dropdown-menu') {expect(find("a", text: link)).not_to be_nil}
+Then(/^the Organizations menu has a dropdown menu with a (.*?) link$/) do |link|
+  within('#menuOrgs > ul.dropdown-menu') { find('a', text: link).should_not be_nil }
+end
+
+Then(/^the Users menu has a dropdown menu with a (.*?) link$/) do |link|
+  within('#menuUsers > ul.dropdown-menu') { find('a', text: link).should_not be_nil }
 end
 
 Then /^I should see permission denied$/ do
@@ -344,7 +348,7 @@ Then(/^I should see a mail-link to "([^"]*)"$/) do |email|
 end
 
 When /^I approve "(.*?)"$/ do |email|
-  visit '/user_reports/pending_admins_index'
+  visit '/user_reports/pending_admins'
   page.body.should have_content(email)
   click_link 'Approve'
 end

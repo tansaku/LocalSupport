@@ -10,11 +10,23 @@ Feature: Admin user interface
     And I am signed in as a admin
     And I am on the home page
 
-  Scenario Outline: Top navbar has organization dropdown menus
-
-    Then the organization menu has a dropdown menu with a <link> link
+  Scenario Outline: Top navbar has Organizations dropdown menus
+    When I click "Without Users"
+    Then I should be on the without users page
+    # other links omitted until implemented
+    Then the Organizations menu has a dropdown menu with a <link> link
   Examples:
     | link                 |
     | All                  |
     | Without Users        |
     | With Generated Users |
+
+  Scenario Outline: Top navbar has Users dropdown menus
+    When I click "Pending Admins"
+    Then I should be on the pending admins page
+    # other links omitted until implemented
+    Then the Users menu has a dropdown menu with a <link> link
+  Examples:
+    | link           |
+    | All            |
+    | Pending Admins |
