@@ -1,9 +1,7 @@
-class UsersController < ApplicationController
+class UserReportsController < ApplicationController
   layout 'full_width'
   before_filter :authorize, :except => [:update]
 
-  # would like this to support generic updating of model with
-  # business logic pulled into a separate model or process
   def update
     user = User.find_by_id(params[:id])
     if params[:organization_id]
@@ -16,11 +14,11 @@ class UsersController < ApplicationController
       redirect_to :status => 404 and return unless current_user.admin?
       user.promote_to_org_admin
       flash[:notice] = "You have approved #{user.email}."
-      redirect_to(users_path)
+      redirect_to '/user_reports/pending_admins'
     end
   end
 
-  def index
+  def pending_admins_index
     @users = User.all
   end
 end

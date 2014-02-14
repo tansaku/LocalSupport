@@ -1,5 +1,5 @@
 require 'spec_helper'
-describe UsersController do
+describe UserReportsController do
   describe 'PUT update user-organization status' do
     before(:each) do
       admin_user = double("User")
@@ -48,7 +48,7 @@ describe UsersController do
       end
       it 'redirect to index page after update succeeds' do
         put :update, {:id => '4'}
-        response.should redirect_to users_path
+        response.should redirect_to '/user_reports/pending_admins'
       end
       it 'shows a flash telling which user got approved' do
         put :update, {:id => '4'}
@@ -75,17 +75,17 @@ describe UsersController do
         it "assigns all users to @users" do
           user_double = double("User")
           User.stub(:all).and_return([user_double])
-          get :index
+          get :pending_admins_index
           expect(assigns(:users)).to eql([user_double])
         end
 
         it "renders the index template" do
-          get :index
+          get :pending_admins_index
           expect(response).to render_template('index')
         end
 
         it "renders in full width" do
-          get :index
+          get :pending_admins_index
           expect(response).to render_template('layouts/full_width')
         end
       end
@@ -96,12 +96,12 @@ describe UsersController do
         end
 
         it "redirects user to root and flashes a notice" do
-          get :index
+          get :pending_admins_index
           response.should redirect_to root_path
         end
 
         it "flashes the relevant notice" do
-          get :index
+          get :pending_admins_index
           expect(flash[:error]).to have_content("You must be signed in as an admin to perform this action!")
         end
       end
@@ -113,12 +113,12 @@ describe UsersController do
       end
 
       it "redirects user to root" do
-        get :index
+        get :pending_admins_index
         response.should redirect_to root_path
       end
 
       it "flashes the relevant notice" do
-        get :index
+        get :pending_admins_index
         expect(flash[:error]).to have_content("You must be signed in as an admin to perform this action!")
       end
 

@@ -5,8 +5,11 @@ LocalSupport::Application.routes.draw do
   get 'contributors' => 'contributors#show'
   match 'organizations/search' => 'organizations#search'
 
-  resources :orphans, only: [:index, :create]
-  resources :users, only: [:index, :update]
+  get '/organization_reports/without_users' => 'organization_reports#without_users_index'
+  post '/organization_reports/without_users' => 'organization_reports#without_users_create'
+
+  get '/user_reports/pending_admins' => 'user_reports#pending_admins_index'
+  put '/user_reports/update' => 'user_reports#update', as: :user
 
   resources :pages
 

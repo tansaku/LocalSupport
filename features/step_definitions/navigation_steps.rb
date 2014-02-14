@@ -14,6 +14,8 @@ Then /^I should be on the (.*) page$/ do |location|
   when "users" then current_path.should == users_path
   when "contributors" then current_path.should == contributors_path
   when "password reset" then current_path.should == edit_user_password_path
+  when "without users" then current_path.should == '/organization_reports/without_users'
+  when "pending admins" then current_path.should == '/user_reports/pending_admins'
   else raise "No matching path found for #{location}!"
   end
 end
@@ -60,6 +62,7 @@ end
 
 When /^I click id "(.*)"$/ do |id|
   find("##{id}").click
+  wait_for_ajax
 end
 
 When /^(?:|I )follow "([^"]*)"$/ do |link|
@@ -148,4 +151,5 @@ end
 
 And(/^I click tableheader "([^"]*)"$/) do |name|
   find('th', :text => "#{name}").click
+  wait_for_ajax
 end

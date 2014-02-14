@@ -12,6 +12,8 @@
 #
 src_files:
   - assets/application.js
+  - assets/admin_ui.js
+  - assets/this_is_my_org.js
   - assets/jasmine-jquery.js
 
 # stylesheets
