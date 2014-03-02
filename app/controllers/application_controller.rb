@@ -1,32 +1,48 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
+  before_filter :store_location
 
-  after_filter :store_location
+  # To prevent infinite redirect loops, only requests from white listed
+  # controllers are available in the "after sign-in redirect" feature
+  def white_listed
+    %w(
+        application
+        contributors
+        organizations
+        pages
+    )
+  end
 
+  def request_controller_is(white_listed)
+    white_listed.include? request.params['controller']
+  end
+
+  def request_verb_is_get?
+    request.env['REQUEST_METHOD'] == 'GET'
+  end
+
+  # Stores the URL if permitted
   def store_location
-    # store last url - this is needed for post-login redirect to whatever the user last visited.
-    sign_in = Regexp.new '/users/sign_in'
-    sign_up = Regexp.new '/users/sign_up'
-    sign_password = Regexp.new '/users/password'
-    user_confirmation = Regexp.new '/users/confirmation'
-    cookies_allow = Regexp.new '/cookies/allow'
-    unless (sign_in =~ request.path ||
-        sign_up =~ request.path ||
-        user_confirmation =~ request.path ||
-        sign_password =~ request.path ||
-        cookies_allow =~ request.path ||
-        request.xhr?) # don't store ajax calls
+    if request_controller_is(white_listed) && request_verb_is_get?
       session[:previous_url] = request.path
     end
   end
 
-  #We test this functionality in sign-in tests for session_controller_spec
+  # Devise hook
+  # Returns the users to the page they were viewing before signing in
   def after_sign_in_path_for(resource)
-    store_location
     return session[:previous_url] if session[:previous_url]
     return organization_path(current_user.organization) if current_user.organization
     root_path
   end
+
+  # Devise Invitable hook
+  # Since users are invited to be org admins, we're delivering them to their page
+  def after_accept_path_for(resource)
+    return organization_path(current_user.organization) if current_user.organization
+    root_path
+  end
+
 
   def allow_cookie_policy
     response.set_cookie 'cookie_policy_accepted', {
@@ -44,6 +60,7 @@ class ApplicationController < ActionController::Base
 
   private
 
+  # Enforces admin-only limits
   # http://railscasts.com/episodes/20-restricting-access
   def authorize
     unless admin?
@@ -53,7 +70,6 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  # Not to be confused with the activerecord admin? method
   def admin?
     current_user.try :admin?
   end
