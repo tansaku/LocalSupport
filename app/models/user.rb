@@ -2,7 +2,7 @@ class User < ActiveRecord::Base
   # Include default devise modules. Others available are:
   # :token_authenticatable, :confirmable,
   # :lockable, :timeoutable and :omniauthable
-  devise :database_authenticatable, :registerable,
+  devise :invitable, :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable, :validatable, :confirmable
 
   # http://stackoverflow.com/a/4558910/2197402
@@ -18,6 +18,11 @@ class User < ActiveRecord::Base
   belongs_to :pending_organization, :class_name => 'Organization', :foreign_key => 'pending_organization_id'
 
   def confirm!
+    super
+    make_admin_of_org_with_matching_email
+  end
+
+  def accept_invitation!
     super
     make_admin_of_org_with_matching_email
   end
@@ -41,6 +46,15 @@ class User < ActiveRecord::Base
     # self required with setter method: http://stackoverflow.com/questions/5183664/why-isnt-self-always-needed-in-ruby-rails-activerecord/5183917#5183917
     self.organization_id = pending_organization_id
     self.pending_organization_id = nil
+    save!
+  end
+
+  def message_for_invite
+    errors.any? ? "Error: #{errors.full_messages.first}" : 'Invited!'
+  end
+
+  def request_admin_status(organization_id)
+    self.pending_organization_id = organization_id
     save!
   end
 end
