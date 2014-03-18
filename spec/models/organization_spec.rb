@@ -37,14 +37,6 @@ describe Organization do
       Organization.not_null_email.should eq [@org1]
     end
 
-    it 'should allow us to find orgs with recently generated users' do
-      Organization.generated_users.should eq []
-      @org1.email = "whatisthis@hello.com"
-      @org1.save
-      @org1.generate_potential_user
-      Organization.generated_users.should eq [@org1]
-    end
-
     it 'should allow us to grab orgs with no admin' do
       Organization.null_users.sort.should eq [@org1, @org2, @org3].sort
       @org1.email = "hello@hello.com"
@@ -54,6 +46,12 @@ describe Organization do
       Organization.null_users.sort.should eq [@org2, @org3].sort
     end
 
+    it 'should allow us to exclude previously invited users' do
+      @org1.email = "hello@hello.com"
+      @org1.save
+      Organization.without_matching_user_emails.should_not include @org1
+    end
+
     # Should we have more tests to cover more possible combinations?
     it 'should allow us to combine scopes' do
       @org1.email = "hello@hello.com"
@@ -61,6 +59,7 @@ describe Organization do
       @org3.email = "hello_again@you_again.com"
       @org3.save
       Organization.null_users.not_null_email.sort.should eq [@org1, @org3]
+      Organization.null_users.not_null_email.without_matching_user_emails.sort.should eq [@org3]
     end
   end
 
