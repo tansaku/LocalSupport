@@ -3,7 +3,19 @@ require 'spec_helper'
 describe User do
 
   let (:model) { mock_model("Organization") }
-  
+
+  context 'invited users scope' do
+    before(:each) do
+      @regular_user = FactoryGirl.create(:user, email: 'regular@guy.com')
+      @invited_user = FactoryGirl.create(:user, email: 'invited@guy.com', invitation_sent_at: '2014-03-12 00:18:02', invitation_accepted_at: nil)
+    end
+    it 'finds all users who have not accepted their invitations yet' do
+      collection = User.invited_not_accepted
+      collection.should_not include(@regular_user)
+      collection.should include(@invited_user)
+    end
+  end
+
   it 'must find an admin in find_by_admin with true argument' do
     FactoryGirl.create(:user, admin: true)
     result = User.find_by_admin(true)
@@ -23,41 +35,40 @@ describe User do
     user.admin.should be_false
   end
 
-  context 'is admin' do
-    subject(:user) { create(:user, admin: true) }  
-    
-    it 'can edit organizations' do
-      user.can_edit?(model).should be_true 
+  describe '#can_edit?' do
+    context 'is admin' do
+      subject(:user) { create(:user, admin: true) }
+
+      it 'can edit organizations' do
+        user.can_edit?(model).should be_true
+      end
+
     end
 
-  end
-  
-  context 'is not admin' do 
-    
-    let( :non_associated_model ) { mock_model("Organization") }
-    
-    subject(:user) { create(:user, admin: false, organization: model ) } 
-    
-    it 'can edit associated organization' do
-      user.organization.should eq model
-      user.can_edit?(model).should be_true 
-    end
-    
-    it 'can not edit non-associated organization' do
-      user.organization.should eq model
-      user.can_edit?(non_associated_model).should be_false
-    end
-    
-    it 'can not edit when associated with no org' do
-      user.organization = nil
-      user.organization.should eq nil
-      user.can_edit?(non_associated_model).should be_false
-    end
+    context 'is not admin' do
+      let( :non_associated_model ) { mock_model("Organization") }
+      subject(:user) { create(:user, admin: false, organization: model ) }
 
-    it 'can not edit when associated with no org and attempting to access non-existent org' do
-      user.can_edit?(nil).should be_false
+      it 'can edit associated organization' do
+        user.organization.should eq model
+        user.can_edit?(model).should be_true
+      end
+
+      it 'can not edit non-associated organization' do
+        user.organization.should eq model
+        user.can_edit?(non_associated_model).should be_false
+      end
+
+      it 'can not edit when associated with no org' do
+        user.organization = nil
+        user.organization.should eq nil
+        user.can_edit?(non_associated_model).should be_false
+      end
+
+      it 'can not edit when associated with no org and attempting to access non-existent org' do
+        user.can_edit?(nil).should be_false
+      end
     end
-   
   end
 
   # http://stackoverflow.com/questions/12125038/where-do-i-confirm-user-created-with-factorygirl
@@ -91,7 +102,13 @@ describe User do
       @admin_user.organization.should eq @match_org
     end
 
+    it 'should be called in #confirm! and #accept_invitation!' do
+      @user.should_receive(:make_admin_of_org_with_matching_email).twice
+      @user.confirm!
+      @user.accept_invitation!
+    end
   end
+
   describe '#promote_to_org_admin' do
     subject(:user) { User.new }
 
@@ -176,4 +193,30 @@ describe User do
 
   end
 
+  context '#message_for_invite' do
+    let(:user) { FactoryGirl.build(:user) } 
+
+    it 'returns Invited! if there are no errors' do
+      expect(user.message_for_invite).to eql 'Invited!'
+    end
+
+    context 'when there are errors' do 
+      before do 
+        user.errors.add(:email, 'error') 
+      end
+      it 'returns a semi-custom error msg if there is one' do
+        expect(user.message_for_invite).to eql 'Error: Email error'
+      end
+    end
+  end
+
+  context '#request_admin_status' do
+    let(:user) { FactoryGirl.build(:user) } 
+    let(:organization_id) { 12345 }
+
+    it 'update pending organization id' do 
+      user.request_admin_status organization_id
+      expect(user.pending_organization_id).to eql organization_id
+    end
+  end
 end
