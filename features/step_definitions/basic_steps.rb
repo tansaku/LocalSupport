@@ -230,6 +230,11 @@ Then(/^I should( not)? see a link or button "(.*?)"$/) do |negate, link|
   expect(page).send(expectation_method, have_selector(:link_or_button, link))
 end
 
+Then(/^the navbar should( not)? have a link to (.*?)$/) do |negate, link|
+  expectation_method = negate ? :not_to : :to
+  within('#navbar') {expect(page).send(expectation_method, have_selector(:link_or_button, link))}
+end
+
 #Then /^I should( not)? see a button saying "(.*?)"$/ do |negate, name|
 #  expectation_method = negate ? :not_to : :to
 #  expect(page).send(expectation_method, have_button("#{name}"))
@@ -372,4 +377,9 @@ Given(/^the (.*?) for "(.*?)" has been marked (public|hidden)$/) do |field,name,
   org.send("publish_#{field}=", publish)
   org.save!
 end
-
+Then /^I should( not)? see:$/ do |negative, table|
+    expectation = negative ? :should_not : :should
+    table.rows.flatten.each do |string|
+    page.send(expectation, have_text(string))
+  end
+end
