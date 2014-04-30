@@ -4,13 +4,15 @@ describe PagesController do
   let(:page) { mock_model Page, id: '2' }
   before { controller.stub(:admin?) { true } }
 
-  describe 'GET index' do
+  {index: 'get', new: 'get', edit: 'get', create: 'post', update: 'put', destroy: 'delete'}.each do |action, request|
     it 'is restricted' do
       controller.should_receive(:admin?) { false }
-      get :index, {}
+      self.send(request.to_sym, action, {:id=>2})
       response.status.should eq 302
     end
+  end
 
+  describe 'GET index' do
     it 'uses a full-width layout' do
       get :index, {}
       response.should render_template 'layouts/full_width'
@@ -85,12 +87,6 @@ describe PagesController do
       assigns(:page).should eq page
     end
 
-    it 'is restricted' do
-      controller.should_receive(:admin?) { false }
-      get :new, {}
-      response.status.should eq 302
-    end
-
     it 'uses a full-width layout' do
       get :new, {}
       response.should render_template 'layouts/full_width'
@@ -104,12 +100,6 @@ describe PagesController do
       Page.should_receive(:find_by_permalink!).with(page.id) { page }
       get :edit, {id: page.id}
       assigns(:page).should eq page
-    end
-
-    it 'is restricted' do
-      controller.should_receive(:admin?) { false }
-      get :edit, {id: page.id}
-      response.status.should eq 302
     end
 
     it 'uses a full-width layout' do
@@ -145,12 +135,6 @@ describe PagesController do
       response.should render_template 'new'
     end
 
-    it 'is restricted' do
-      controller.should_receive(:admin?) { false }
-      post :create, {page: attributes}
-      response.status.should eq 302
-    end
-
     it 'uses a full-width layout' do
       post :create, {page: attributes}
       response.should render_template 'layouts/full_width'
@@ -182,12 +166,6 @@ describe PagesController do
       page.should_receive(:update_attributes).with(attributes.stringify_keys) { false }
       put :update, {id: page.id, page: attributes}
       response.should render_template 'edit'
-    end
-
-    it 'is restricted' do
-      controller.should_receive(:admin?) { false }
-      put :update, {id: page.id, page: attributes}
-      response.status.should eq 302
     end
 
     it 'uses a full-width layout' do
