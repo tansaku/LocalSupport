@@ -5,7 +5,7 @@ describe PagesController do
   before { controller.stub(:admin?) { true } }
 
   {index: 'get', new: 'get', edit: 'get', create: 'post', update: 'put', destroy: 'delete'}.each do |action, request|
-    it 'is restricted' do
+    it "#{action} #{request} is restricted" do
       controller.should_receive(:admin?) { false }
       self.send(request.to_sym, action, {:id=>2})
       response.status.should eq 302
