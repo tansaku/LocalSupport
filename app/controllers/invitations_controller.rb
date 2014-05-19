@@ -3,17 +3,19 @@ class InvitationsController < ApplicationController
 
   # xhr only, tested in a request spec
   def create
-    res = params[:values].each_with_object({}) do |value, response|
-      response[value[:id]] = invite_user(value[:email], params[:resend_invitation])
+    flag = params.fetch(:resend_invitation).to_s == 'true' ? true : false
+    Devise.resend_invitation = flag
+    answers = params.fetch(:values).map do |invite|
+      user = User.invite!({email: invite.fetch(:email)}, current_user) do |user|
+        user.organization_id = invite.fetch(:id)
+      end
+      answer = if user.errors.any?
+                   user.errors.full_messages.map{|msg| "Error: #{msg}"}.join(' ')
+                 else
+                   'Invited!'
+                 end
+      {invite.fetch(:id) => answer}
     end
-    respond_to do |format|
-      format.json { render :json => res.to_json }
-    end
-  end
-
-  private
-  def invite_user(email, resend_invitation)
-    UserInviter.new(self, User, current_user, Devise).invite(
-        email, resend_invitation)
+    render json: answers.reduce({}, :update).to_json
   end
 end
