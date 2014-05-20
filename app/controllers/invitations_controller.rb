@@ -4,12 +4,17 @@ class InvitationsController < ApplicationController
   # xhr only, tested in a request spec
   def create
     tell_devise_if_okay_to_resend_invitations
+    results = invite_users_and_collate_results
+    render json: results.to_json
+  end
+
+  def invite_users_and_collate_results
     invites = get_invitations
+
     invites.each do |organization_id, email|
-       user = invite_user(email, organization_id)
-       invites[organization_id] = check_result_of_inviting user
+      user = invite_user(email, organization_id)
+      invites[organization_id] = result_of_inviting user
     end
-    render json: invites.to_json
   end
 
   def tell_devise_if_okay_to_resend_invitations
@@ -23,7 +28,7 @@ class InvitationsController < ApplicationController
     end
   end
 
-  def check_result_of_inviting user
+  def result_of_inviting user
     if user.errors.any?
       user.errors.full_messages.map{|msg| "Error: #{msg}"}.join(' ')
     else
