@@ -12,7 +12,7 @@ describe UserReportsController do
       Organization.stub(:find).and_return(@org)
     end
     context 'user requesting pending status to be admin of charity' do
-      before do 
+      before do
         @nonadmin_user.stub(:request_admin_status)
         @nonadmin_user.stub(:promote_to_org_admin)
         @nonadmin_user.stub(:email)
@@ -51,7 +51,7 @@ describe UserReportsController do
   end
 
   describe 'GET index to view pending users' do
-    context "user signed in", :helpers => :controllers  do
+    context "user signed in", :helpers => :controllers do
       context "as admin" do
         before(:each) do
           make_current_user_admin
@@ -108,5 +108,56 @@ describe UserReportsController do
       end
 
     end
+  end
+
+  describe 'GET invited users report', :helpers => :controllers do
+    let(:organization) do
+      double :organization, {
+          id: '-1',
+          name: 'sample org'
+      }
+    end
+
+    let(:user) do
+      double :user, {
+          organization: organization,
+          email: 'user@email.org',
+          invitation_sent_at: 'date-time-thingy'
+      }
+    end
+
+    before do
+      make_current_user_admin
+      allow(User).to receive(:invited_not_accepted) { [user] }
+    end
+
+    it 'is for admins only' do
+      make_current_user_nonadmin
+      get :invited
+      response.should redirect_to root_path
+    end
+
+    it 'uses the invited template and the invitation table layout' do
+      get :invited
+      response.should render_template 'user_reports/invited'
+      response.should render_template 'layouts/invitation_table'
+    end
+
+    it 'assigns true to @resend_invitation' do
+      get :invited
+      expect(assigns(:resend_invitation)).to be true
+    end
+
+    it 'assigns serialized invitations to @invitations' do
+      expect(User).to receive(:invited_not_accepted) { [user] }
+      get :invited
+      expect(assigns(:invitations)).to eq([{
+                                               'id' => '-1',
+                                               'name' => 'sample org',
+                                               'email' => 'user@email.org',
+                                               'date' => 'date-time-thingy'
+                                           }])
+    end
+
   end
 end

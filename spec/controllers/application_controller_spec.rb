@@ -82,4 +82,64 @@ describe ApplicationController, :helpers => :controllers do
       response.cookies['cookie_policy_accepted'].should be_true
     end
   end
+
+  describe '#assign_footer_page_links' do
+    it 'calls the model method that provides visible page links' do
+      expect(Page).to receive(:visible_links).and_return(nil)
+      subject.send(:assign_footer_page_links)  
+    end
+    it 'makes the visible page links available to the view' do
+      fake_links = Object.new
+      Page.stub(:visible_links).and_return(fake_links)
+      subject.send(:assign_footer_page_links)  
+      expect(assigns(:footer_page_links)).to be fake_links
+    end
+  end
+
+  describe 'PRIVATE METHODS' do
+    let(:user) { double :user }
+    before { controller.stub current_user: user }
+
+    context '#authorize' do
+      it 'Unauthorized: redirects to root_path and displays flash' do
+        controller.stub admin?: false
+        controller.should_receive(:redirect_to).with(root_path) { true } # calling original raises errors
+        controller.flash.should_receive(:[]=)
+          .with(:error, 'You must be signed in as an admin to perform this action!')
+          .and_call_original
+        controller.instance_eval { authorize }.should be false
+        # can't assert `redirect_to root_path`: http://owowthathurts.blogspot.com/2013/08/rspec-response-delegation-error-fix.html
+        flash[:error].should_not be_nil
+      end
+
+      it 'Authorized: allows execution to continue' do
+        controller.stub admin?: true
+        controller.instance_eval { authorize }.should be nil
+      end
+    end
+
+    context '#admin?' do
+      it 'returns false when current_user is nil' do
+        controller.stub current_user: nil
+        controller.instance_eval { admin? }.should be_false
+      end
+
+      it 'otherwise depends on { current_user.admin? }' do
+        user.should_receive(:admin?) { false }
+        controller.instance_eval { admin? }.should be false
+        user.should_receive(:admin?) { true }
+        controller.instance_eval { admin? }.should be true
+      end
+    end
+  end
 end
+
+# all child controllers should implement the ApplicationController's
+# before_filter
+describe OrganizationsController do
+  it 'assigns footer page links on a given request' do
+    get :index
+    expect(assigns(:footer_page_links)).not_to be nil
+  end
+end
+

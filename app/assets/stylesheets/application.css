@@ -101,6 +101,8 @@ body {
 
 /* CUSTOMIZE THE NAVBAR
 -------------------------------------------------- */
+
+
 /* Special class on .container surrounding .navbar, used for positioning it into place. */
 .navbar-wrapper {
     margin-top: 20px ;
@@ -130,6 +132,11 @@ body {
 .nav input {
     margin: 5px 5px 5px 5px;
     padding: 0 5px 0 5px;
+}
+
+/* Get the top/bottom padding equal for the links in the navbar */
+#button-rack {
+  padding: 1px 0 1px 0 !important;
 }
 
 /* so that the extra admin-only buttons don't get too spaced out */
@@ -204,8 +211,11 @@ body {
     background: #FFF;
 }
 
+/* Page edit form */
 
-
-
-
-
+label.control-label#page_link_visible {
+    display: inline-block;
+}
+input#page_link_visible {
+    margin: 0;
+}

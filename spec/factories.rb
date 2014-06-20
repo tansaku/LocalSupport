@@ -15,6 +15,7 @@ FactoryGirl.define do
     name 'About Us'
     permalink 'about'
     content 'abc123'
+    link_visible true
   end
   factory :user do
     email "jj@example.com"
@@ -32,5 +33,10 @@ FactoryGirl.define do
         user.save!
       end
     end
+  end
+
+  factory :volunteer_op do
+    title "Help out"
+    description "Some nice people"
   end
 end

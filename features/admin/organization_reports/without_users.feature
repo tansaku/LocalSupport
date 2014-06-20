@@ -18,13 +18,12 @@ Feature: Orphans UI
       | pending@myorg.com     | password123    | false | 2008-01-01 00:00:00 |                 | My Organization      |
       | invited-admin@org.org | password123    | false | 2008-01-01 00:00:00 |                 |                      |
     And the admin invited a user for "Yet Another Org"
-    And an email with subject line "Invitation to Harrow Community Network" should have been sent
 
   @javascript
-  Scenario: Admin can generate link but only for unique email
+  Scenario: Admin can invite users but only for unique emails
     Given cookies are approved
     Given I am signed in as an admin
-    And I visit the without users page
+    And I visit the organisations without users page
     And I check the box for "The Organization"
     And I check the box for "The Same Email Org"
     When I click id "invite_users"
@@ -34,24 +33,14 @@ Feature: Orphans UI
   Scenario: Already invited organizations don't appear
     Given cookies are approved
     And I am signed in as an admin
-    And I visit the without users page
+    And I visit the organisations without users page
     Then I should not see "Yet Another Org"
-
-  @javascript
-  Scenario: Select All button toggles all checkboxes
-    Given cookies are approved
-    Given I am signed in as an admin
-    And I visit the without users page
-    And I press "Select All"
-    Then all the checkboxes should be checked
-    When I press "Select All"
-    Then all the checkboxes should be unchecked
 
   @javascript
   Scenario: Admin should be notified when email is invalid
     Given cookies are approved
     Given I am signed in as an admin
-    And I visit the without users page
+    And I visit the organisations without users page
     And I check the box for "Crazy Email Org"
     When I click id "invite_users"
     Then I should see "Error: Email is invalid" in the response field for "Crazy Email Org"
@@ -59,27 +48,41 @@ Feature: Orphans UI
   Scenario: As a non-admin trying to access orphans index
     Given cookies are approved
     Given I am signed in as a non-admin
-    And I visit the without users page
+    And I visit the organisations without users page
     Then I should be on the home page
     And I should see "You must be signed in as an admin to perform this action!"
 
-  Scenario: Invited user clicking through on email with cookies policy clicked
-    Given I click on the invitation link in the email to "admin@another.org"
-    And I accepted the cookie policy from the "invitation" page
-    And I set my password
-    Then I should be on the charity page for "Yet Another Org"
-
-  Scenario: Invited user clicking through on email ignoring cookies policy
-    Given I click on the invitation link in the email to "admin@another.org"
-    And I set my password
-    Then I should be on the charity page for "Yet Another Org"
-
+  #These next two scenarios apply to layouts/invitation_table
   @javascript
   Scenario: Table columns should be sortable
     Given cookies are approved
     Given I am signed in as an admin
-    And I visit the without users page
+    And I visit the organisations without users page
     And I click tableheader "Name"
     Then I should see "Crazy Email Org" before "The Organization"
     When I click tableheader "Name"
     Then I should see "The Organization" before "Crazy Email Org"
+
+  @javascript
+  Scenario: Select All button toggles all checkboxes
+    Given cookies are approved
+    Given I am signed in as an admin
+    And I visit the organisations without users page
+    And I press "Select All"
+    Then all the checkboxes should be checked
+    When I press "Select All"
+    Then all the checkboxes should be unchecked
+
+  #The next two scenarios check the flow of the user accepting the invitation
+  Scenario: Invited user clicking through on email with cookies policy clicked
+    Given I click on the invitation link in the email to "admin@another.org"
+    And I accepted the cookie policy from the "invitation" page
+    And I set my password
+    Then I should be on the show page for the organization named "Yet Another Org"
+
+  Scenario: Invited user clicking through on email ignoring cookies policy
+    Given I click on the invitation link in the email to "admin@another.org"
+    And I set my password
+    Then I should be on the show page for the organization named "Yet Another Org"
+
+

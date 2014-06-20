@@ -1,4 +1,4 @@
-describe('Organization Reports - without users page', function () {
+describe('Invitations toolbar script', function () {
     var invite_users, select_all;
     beforeEach(function () {
         setFixtures('<div id="resend_invitation" data-resend_invitation="false" style="display: none;"></div>');
@@ -24,16 +24,16 @@ describe('Organization Reports - without users page', function () {
             invite_users.click();
             expect($.ajax.calls.count()).toBe(1);
             var args = $.ajax.calls.mostRecent().args[0];
-            expect(args.data).toEqual('{"values":[{"id":"1","email":"a@org.org"},{"id":"3","email":"c@org.org"}],"resend_invitation":false}');
+            expect(args.data).toEqual('{"invite_list":{"1":"a@org.org","3":"c@org.org"},"resend_invitation":false}');
             expect(args.dataType).toBe('json');
             expect(args.contentType).toBe('application/json');
             expect(args.type).toBe('POST');
-            expect(args.url).toBe('/organization_reports/without_users')
+            expect(args.url).toBe('/invitations')
         });
         it('uses JSON stringify to format the array properly for Rails', function() {
             var stringify = spyOn(JSON, 'stringify');
             invite_users.click();
-            expect(stringify).toHaveBeenCalledWith({ values : [ { id : '1', email : 'a@org.org' }, { id : '3', email : 'c@org.org' } ], resend_invitation : false });
+            expect(stringify).toHaveBeenCalledWith({ invite_list : { 1 : 'a@org.org', 3 : 'c@org.org' }, resend_invitation : false });
         });
         it('overwrites checkbox with server response', function () {
             spyOn($, "ajax").and.callFake(function (params) { 
