@@ -5,7 +5,6 @@ module ControllerExtension
               .prepend(name_of controller)
               .camelize
               .constantize
-              .check_permissions(controller)
   end
 
   def self.name_of(controller)

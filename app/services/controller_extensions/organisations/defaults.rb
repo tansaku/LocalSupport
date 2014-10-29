@@ -1,6 +1,5 @@
 module ControllerExtensions
   module Organisations::Defaults
-    extend ActiveSupport::Concern
 
     def set_params
       defaults = {
