@@ -1,6 +1,8 @@
 module ControllerExtensions
   module Organisations::Defaults
 
+    # organisations_path(service: 'without_users')
+
     def set_params
       defaults = {
         layout: 'two_columns',
@@ -15,17 +17,13 @@ module ControllerExtensions
 
     def set_instance_variables
       @organisations = apply_scopes(Organisation)
+      @json = gmap4rails_with_popup_partial(@organisations, 'popup')
+      @category_options = Category.html_drop_down_options
     end
 
     def apply_scopes(klass)
       params[:scopes].each { |s| klass = klass.send(s) }
       klass
-    end
-
-    module ClassMethods
-      def check_permissions(controller)
-        Organisations::Index
-      end
     end
   end
 end

@@ -188,7 +188,9 @@ describe OrganisationsController do
       end
 
       context 'admins' do
+        let!(:org){create(:organisation, email: 'well@hello.there')}
         before do
+
           controller.stub admin?: true
           get :index, service: 'without_users'
         end
@@ -214,7 +216,6 @@ describe OrganisationsController do
           end
 
           it do
-            org = create(:organisation, email: 'well@hello.there')
             expect(assigns(:organisations)).to include org
           end
         end
