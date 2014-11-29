@@ -8,10 +8,10 @@ class OrganisationsController < ApplicationController
     @query_term = params[:q]
     @category_id = params.try(:[],'category').try(:[],'id')
     @category = Category.find_by_id(@category_id)
-    @organisations = Organisation.order_by_most_recent
+    @organisations = Organisation.includes(:users).order_by_most_recent
     @organisations = @organisations.search_by_keyword(@query_term).filter_by_category(@category_id)
     flash.now[:alert] = SEARCH_NOT_FOUND if @organisations.empty?
-    @json = gmap4rails_with_popup_partial(@organisations,'popup')
+    @markers = build_map_markers(@organisations)
     @category_options = Category.html_drop_down_options
     render :template =>'organisations/index'
   end
@@ -19,8 +19,8 @@ class OrganisationsController < ApplicationController
   # GET /organisations
   # GET /organisations.json
   def index
-    @organisations = Organisation.order_by_most_recent
-    @json = gmap4rails_with_popup_partial(@organisations,'popup')
+    @organisations = Organisation.includes(:users).order_by_most_recent
+    @markers = build_map_markers(@organisations)
     @category_options = Category.html_drop_down_options
   end
 
@@ -34,19 +34,21 @@ class OrganisationsController < ApplicationController
     @can_create_volunteer_op = current_user.can_create_volunteer_ops?(@organisation) if current_user
     @grabbable = current_user ? current_user.can_request_org_admin?(@organisation) : true
    # @next_path = current_user ? organisation_user_path(@organisation.id, current_user.id) : new_user_session_path
-    @json = gmap4rails_with_popup_partial(@organisation,'popup')
+    @markers = build_map_markers([@organisation])
   end
 
   # GET /organisations/new
   # GET /organisations/new.json
   def new
     @organisation = Organisation.new
+    @categories_start_with = Category.first_category_name_in_each_type
   end
 
   # GET /organisations/1/edit
   def edit
     @organisation = Organisation.find(params[:id])
-    @json = gmap4rails_with_popup_partial(@organisation,'popup')
+    @markers = build_map_markers([@organisation])
+    @categories_start_with = Category.first_category_name_in_each_type
     return false unless user_can_edit? @organisation
     #respond_to do |format|
     #  format.html {render :layout => 'full_width'}
@@ -58,11 +60,12 @@ class OrganisationsController < ApplicationController
   def create
     # model filters for logged in users, but we check here if that user is an admin
     # TODO refactor that to model responsibility?
+     org_params = OrganisationParams.build params
      unless current_user.try(:admin?)
        flash[:notice] = PERMISSION_DENIED
        redirect_to organisations_path and return false
      end
-    @organisation = Organisation.new(params[:organisation])
+    @organisation = Organisation.new(org_params)
 
     if @organisation.save
       redirect_to @organisation, notice: 'Organisation was successfully created.'
@@ -76,8 +79,9 @@ class OrganisationsController < ApplicationController
   def update
     @organisation = Organisation.find(params[:id])
     params[:organisation][:admin_email_to_add] = params[:organisation_admin_email_to_add] if params[:organisation]
+    update_params = OrganisationParams.build params 
     return false unless user_can_edit? @organisation
-    if @organisation.update_attributes_with_admin(params[:organisation])
+    if @organisation.update_attributes_with_admin(update_params)
       redirect_to @organisation, notice: 'Organisation was successfully updated.'
     else
       flash[:error] = @organisation.errors[:administrator_email][0]
@@ -99,12 +103,33 @@ class OrganisationsController < ApplicationController
     redirect_to organisations_path
   end
 
-  private
-  def gmap4rails_with_popup_partial(item, partial)
-    item.to_gmaps4rails  do |org, marker|
-      marker.infowindow render_to_string(:partial => partial, :locals => { :@org => org})
+class OrganisationParams 
+    def self.build params
+      params.require(:organisation).permit( :admin_email_to_add, :description, :address, :publish_address, :postcode, :email, 
+                     :publish_email, :website, :publish_phone, :donation_info, :name, :telephone,
+                     category_organisations_attributes: [:_destroy, :category_id, :id])
     end
   end
+
+  private
+
+  def build_map_markers(organisations)
+    ::MapMarkerJson.build(organisations) do |org, marker|
+      marker.lat org.latitude
+      marker.lng org.longitude
+      marker.infowindow render_to_string(partial: 'popup', locals: {org: org})
+      marker.shadow({ :url => 'hello' }) if org.not_updated_recently_or_has_no_owner?
+      picture = org.gmaps4rails_marker_picture
+      if picture.present?
+        marker.picture({
+          :url => picture['picture'],
+          :width   => 32,
+          :height  => 32,
+        })
+      end
+    end
+  end
+
   def user_can_edit?(org)
     unless current_user.try(:can_edit?,org)
       flash[:notice] = PERMISSION_DENIED

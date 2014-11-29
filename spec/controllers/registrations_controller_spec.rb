@@ -1,6 +1,6 @@
-require 'spec_helper'
+require 'rails_helper'
 
-describe RegistrationsController do
+describe RegistrationsController, :type => :controller do
   before :suite do
     FactoryGirl.factories.clear
     FactoryGirl.find_definitions
@@ -19,7 +19,7 @@ describe RegistrationsController do
     end
 
     it 'does not authenticate user' do
-      expect(warden.authenticated?(:user)).to be_false
+      expect(warden.authenticated?(:user)).to be false
     end
 
     it 'redirects to home page after registration form' do
@@ -53,7 +53,7 @@ describe RegistrationsController do
 
     it 'has an active record error message in the user instance variable when registration fails due to non matching passwords' do
       post :create, 'user' => {'email' => 'example2@example.com', 'password' => 'pppppppp', 'password_confirmation' => 'aaaaaaaaaa'}
-      expect(assigns(:user).errors.full_messages).to include("Password doesn't match confirmation")
+      expect(assigns(:user).errors.full_messages).to include("Password confirmation doesn't match Password")
     end
   end
 end

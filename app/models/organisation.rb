@@ -13,21 +13,37 @@ class Organisation < ActiveRecord::Base
   validates_url :donation_info, :prefferred_scheme => 'http://', :if => Proc.new{|org| org.donation_info.present?}
 
   # http://stackoverflow.com/questions/10738537/lazy-geocoding
-  acts_as_gmappable :check_process => false, :process_geocoding => :run_geocode?
   has_many :users
   has_many :volunteer_ops
-  has_and_belongs_to_many :categories
+  has_many :category_organisations
+  has_many :categories, :through => :category_organisations
   # Setup accessible (or protected) attributes for your model
   # prevents mass assignment on other fields not in this list
-  attr_accessible :name, :description, :address, :postcode, :email, :website, :telephone, :donation_info, :publish_address, :publish_phone, :publish_email
+  #attr_accessible :name, :description, :address, :postcode, :email, :website, :telephone, :donation_info, :publish_address, :publish_phone, :publish_email, :category_organisations_attributes
   accepts_nested_attributes_for :users
-  scope :order_by_most_recent, order('updated_at DESC')
-  scope :not_null_email, :conditions => "organisations.email <> ''"
+  accepts_nested_attributes_for :category_organisations,
+                                :allow_destroy => true
+  scope :order_by_most_recent, -> {order('updated_at DESC')}
+  scope :not_null_email, lambda {where("organisations.email <> ''")}
   # Should we not use :includes, which pulls in extra data? http://nlingutla.com/blog/2013/04/21/includes-vs-joins-in-rails/
   # Alternative => :joins('LEFT OUTER JOIN users ON users.organisation_id = organisations.id)
   # Difference between inner and outer joins: http://stackoverflow.com/a/38578/2197402
-  scope :null_users, lambda { includes(:users).where("users.organisation_id IS NULL") }
-  scope :without_matching_user_emails, :conditions => "organisations.email NOT IN (#{User.select('email').to_sql})"
+  scope :null_users, lambda { includes(:users).where("users.organisation_id IS NULL").references(:users) }
+  scope :without_matching_user_emails, lambda {where("organisations.email NOT IN (#{User.select('email').to_sql})")}
+
+  after_save :uninvite_users, if: ->{ email_changed? }
+
+  def not_updated_recently?
+    updated_at < 365.day.ago
+  end
+
+  def uninvite_users
+    users.invited_not_accepted.update_all(organisation_id: nil)
+  end
+
+  # For the geocoder gem
+  geocoded_by :full_address
+  after_validation :geocode, if: -> { run_geocode? }
 
   def run_geocode?
     ## http://api.rubyonrails.org/classes/ActiveModel/Dirty.html
@@ -38,17 +54,11 @@ class Organisation < ActiveRecord::Base
     latitude.blank? and longitude.blank?
   end
 
-  #This method is overridden to save organisation if address was failed to geocode
-  def run_validations!
-    run_callbacks :validate
-    remove_errors_with_address
-    errors.empty?
-  end
-
   #TODO: Give this TLC and refactor the flow or refactor out responsibilities
   # This method both adds new editors and/or updates attributes
   def update_attributes_with_admin(params)
     email = params[:admin_email_to_add]
+    params.delete :admin_email_to_add
     if email.blank?
       return self.update_attributes(params)   # explicitly call with return to return boolean instead of nil
     end
@@ -71,17 +81,18 @@ class Organisation < ActiveRecord::Base
   end
 
   def self.filter_by_category(category_id)
-    return scoped unless category_id.present?
+    return all unless category_id.present?
     self.joins(:categories).where(is_in_category(category_id)) #do we need to sanitize category_id?
   end
 
-  def gmaps4rails_address
-    "#{self.address}, #{self.postcode}"
+  def gmaps4rails_marker_picture
+    return { "picture" => "https://maps.gstatic.com/intl/en_ALL/mapfiles/markers2/measle.png" } if not_updated_recently_or_has_no_owner? 
+    return {}
   end
 
-  def gmaps4rails_infowindow
-    "#{self.name}"
-  end
+  def full_address
+     "#{self.address}, #{self.postcode}"
+   end
 
   #Edit this if CSV 'schema' changes
   #value is the name of a column in csv file
@@ -172,20 +183,9 @@ class Organisation < ActiveRecord::Base
       end
     end
   end
-
-  def generate_potential_user
-    password = Devise.friendly_token.first(8)
-    user = User.new(:email => self.email, :password => password)
-    unless user.valid?
-      user.save
-      return user # so that it can be inspected for errors
-    end
-    user.skip_confirmation_notification!
-    user.reset_password_token=(User.reset_password_token)
-    user.reset_password_sent_at=Time.now
-    user.save!
-    user.confirm!
-    user
+  
+  def not_updated_recently_or_has_no_owner?
+    self.users.empty? || not_updated_recently?
   end
 
   private
@@ -209,7 +209,7 @@ class Organisation < ActiveRecord::Base
   def self.contains_name(key)
     table[:name].matches(key)
   end
-  
+
   def remove_errors_with_address
     errors_hash = errors.to_hash
     errors.clear

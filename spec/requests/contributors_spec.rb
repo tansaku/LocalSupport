@@ -1,9 +1,8 @@
-require 'spec_helper'
+require 'rails_helper'
 
-describe "Contributors" do
+describe "Contributors", :type => :request do
   describe "GET /contributors" do
     before :each do
-      Page.stub(:all).and_return []
       contributors = ([
           {'login' => 'thomas', 'avatar_url' => 'http://example.com/thomas.png', 'html_url' => 'http://github.com/thomas', 'contributions' => 7},
           {'login' => 'john', 'avatar_url' => 'http://example.com/john.png', 'html_url' => 'http://github.com/john', 'contributions' => 9}

@@ -2,6 +2,9 @@ require 'webmock/cucumber'
 require 'uri-handler'
 include ApplicationHelper
 
+Then(/^I travel "(.*?)" days into the future$/) do |days|
+  Delorean.time_travel_to "#{days} days from now"
+end
 Then(/^I should see the "(.*?)" image linked to "(.*?)"$/) do |image_alt, link|
   within("a[href='#{link}']") do
     find("img[@alt='#{image_alt}']").should_not be_nil
@@ -77,7 +80,17 @@ When /^I search for "(.*?)"$/ do |text|
   click_button 'Submit'
 end
 
-Given /^I fill in the new charity page validly$/ do
+Given (/^I fill in the new charity page validly$/) do
+  stub_request_with_address("64 pinner road")
+  fill_in 'organisation_address', :with => '64 pinner road'
+  fill_in 'organisation_name', :with => 'Friendly charity'
+end
+Given (/^I fill in the new charity page validly including the categories:$/) do |categories_table|
+  categories_table.hashes.each do |cat|
+    steps %Q{
+      And I check the category "#{cat[:name]}"
+    }
+  end
   stub_request_with_address("64 pinner road")
   fill_in 'organisation_address', :with => '64 pinner road'
   fill_in 'organisation_name', :with => 'Friendly charity'
@@ -100,6 +113,15 @@ Given /^I update "(.*?)" charity address to be "(.*?)"( when Google is indispose
     Given I visit the show page for the organisation named "#{name}"
     And I follow "Edit"
     And I edit the charity address to be "#{address}" #{indisposed ? 'when Google is indisposed' : ''}
+    And I press "Update Organisation"
+  }
+end
+
+Given(/^I edit the charity email of "(.*?)" to be "(.*?)"$/) do |name, email|
+  steps %Q{
+    Given I visit the show page for the organisation named "#{name}"
+    And I follow "Edit"
+    And I edit the charity email to be "#{email}"
     And I press "Update Organisation"
   }
 end
@@ -132,6 +154,10 @@ end
 
 Given /^I edit the charity website to be "(.*?)"$/ do |url|
   fill_in('organisation_website', :with => url)
+end
+
+Given /^I edit the charity email to be "(.*?)"$/ do |email|
+  fill_in('organisation_email', :with => email)
 end
 
 When /^I edit the charity address to be "(.*?)"$/ do |address|
@@ -229,6 +255,17 @@ Then /^I should( not)? see a new organisations link/ do |negate|
   #page.should_not have_selector('a').with_attribute href: new_organisation_path
   expectation_method = negate ? :not_to : :to
   expect(page).send(expectation_method, have_xpath("//a[@href='#{new_organisation_path}']"))
+end
+
+Then /^I should see "([^"]*)", "([^"]*)" and "([^"]*)"$/ do |text1, text2, text3|
+  expect(page).to have_content text1
+  expect(page).to have_content text2
+  expect(page).to have_content text3
+end
+
+Then /^I should see "([^"]*)" and "([^"]*)"$/ do |text1, text2|
+  expect(page).to have_content text1
+  expect(page).to have_content text2
 end
 
 Then /^I should( not)? see "((?:(?!before|").)+)"$/ do |negate, text|
@@ -332,13 +369,34 @@ end
 When /^I approve "(.*?)"$/ do |email|
   visit users_report_path
   page.body.should have_content(email)
-  click_link 'Approve'
+  user_id = User.find_by_email(email).id
+  within("tr##{user_id}") do
+    click_link 'Approve'
+  end
 end
 
 Then(/^"(.*?)" is a charity admin of "(.*?)"$/) do |user_email, org_name|
   user = User.find_by_email(user_email)
   org = Organisation.find_by_name(org_name)
   user.organisation.should == org
+end
+
+When /^I delete "(.*?)"$/ do |email|
+  visit users_report_path
+  page.body.should have_content(email)
+  user_id = User.find_by_email(email).id
+  within("tr##{user_id}") do
+    click_link 'Delete'
+  end
+end
+Then(/^user "(.*?)" should exist$/) do |user_email|
+  visit users_report_path
+  user_id = User.find_by_email(user_email).id
+  find("tr##{user_id}", text: user_email).should_not be_nil
+end
+Then /^user "(.*?)" is( not)? deleted$/ do |email, negative|
+  expectation = negative ? :not_to : :to
+  expect(User.find_by_email email).send(expectation, be_nil)
 end
 
 And(/^I (un)?check "([^"]*)"$/) do |negate, css|
@@ -382,7 +440,8 @@ end
 Given /^associations are destroyed for:$/ do |table|
   table.rows.flatten.each do |org_name|
     org = Organisation.find_by_name org_name
-    user = org.users.pop
+    user = org.users.last
+    org.users = org.users[0..-2]
     org.save
     user.organisation_id = nil
     user.save

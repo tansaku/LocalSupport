@@ -1,7 +1,7 @@
 source 'http://rubygems.org'
 
-ruby '1.9.3'
-gem 'rails', '3.2.19'
+ruby '2.0.0'
+gem 'rails', '~> 4.1'
 gem 'pg'
 gem 'devise', '3.0.3'
 gem 'devise_invitable', '~> 1.2.1'
@@ -12,36 +12,37 @@ gem 'heroku-api'
 
 # for Heroku deployment - as described in Ap. A of ELLS book
 group :development, :test do
+  gem 'delorean'
   gem 'metric_fu'
   gem 'database_cleaner', '1.0.1'
   gem 'launchy'
   gem 'simplecov'
+  gem 'sinatra-base'
   gem 'rspec-rails'
+  gem 'rspec-activemodel-mocks'
   gem 'execjs'
   gem 'aruba'
+  gem 'byebug'
   gem 'rack_session_access'
-  gem 'jasmine'
-  gem 'jasmine-jquery-rails'
+  gem 'jasmine', '2.1.0'
+  gem 'jasmine-jquery-rails', '2.0.2'
   #gem 'better_errors'
   gem 'binding_of_caller' # plays well with better_errors
 end
 
 group :development do
   #gem 'ruby-debug19', :require => 'ruby-debug'
-  gem 'debugger', '~> 1.6.8'
+  #gem 'debugger', '~> 1.6.8'
   gem 'railroady'
 end
 
 group :test do
   gem 'cucumber-rails', :require => false
   gem 'cucumber-rails-training-wheels'
-  gem 'minitest', '~> 4.7.1'
-  gem 'ZenTest'
   gem 'capybara', '2.4.1'
   gem "capybara-webkit", "~> 1.1.0"
-  gem 'webrat'
   gem 'factory_girl_rails', :require => false
-  gem 'webmock'
+  gem 'webmock', '1.20.0'
   gem 'uri-handler'
   gem 'selenium'
   gem 'selenium-client'
@@ -52,16 +53,11 @@ group :production do
 end
 
 
-# Gems used only for assets and not required
-# in production environments by default.
-
-group :assets do
-  gem 'coffee-rails'#, "~> 3.1.0"
-  gem 'uglifier'
-  gem 'sass-rails'
-  gem 'less-rails'
-  gem 'twitter-bootstrap-rails'
-end
+gem 'coffee-rails', "4.1.0"
+gem 'uglifier', '2.5.3'
+gem 'sass-rails', '4.0.3'
+gem 'less-rails', '2.5.0'
+gem 'twitter-bootstrap-rails', '2.2.8'
 
 gem 'font-awesome-rails'
 
@@ -77,13 +73,10 @@ gem 'bootstrap_sortable_rails', '~> 0.1.3'
 # To use debugger
 # gem 'ruby-debug19', :require => 'ruby-debug'
 
-group :test do
-  # Pretty printed test output
-  gem 'turn', :require => false
-end
-
 gem 'therubyracer'
-gem 'gmaps4rails'
+gem 'underscore-rails'
+gem 'geocoder'
+gem 'gmaps4rails', "2.1.2"
 #gem 'mongrel'
 gem 'kaminari'
 gem 'unicorn'
@@ -96,4 +89,4 @@ gem 'url_validator'
 
 
 gem 'rails_autolink'
-gem 'acts_as_paranoid'
+gem "paranoia", "~> 2.0"

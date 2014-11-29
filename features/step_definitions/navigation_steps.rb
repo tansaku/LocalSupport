@@ -51,6 +51,7 @@ Then /^I (visit|should be on) the new volunteer op page for "(.*?)"$/ do |mode, 
     else raise "unknown mode '#{mode}'"
   end
 end
+
 Then /^I (visit|should be on) the (edit|show) page for the (.*?) (named|titled) "(.*?)"$/ do |mode, action, object, schema, name|
   record = find_record_for(object, schema, name)
   url = url_for({
@@ -165,4 +166,15 @@ end
 
 Then(/^I should see "([^"]*)" in the flash$/) do |message|
   page.should have_css('div#flash_success', :text => message)
+end
+
+Then(/^I should( not)? see the call to update details for organisation "(.*)"/) do |negative, org_name|
+    org = Organisation.find_by_name org_name
+    expectation_method = negative ? :should_not : :should
+    message = "You have not updated your details in over a year! Please click here to update now."
+    page.send(expectation_method, have_css('div#flash_warning', :text => message))
+
+    within(negative.nil? ? 'div#flash_warning' : 'body') do
+      page.send(expectation_method, have_link("here", :href => edit_organisation_path(org)))
+    end
 end

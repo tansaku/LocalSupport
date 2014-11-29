@@ -12,7 +12,6 @@ class PagesController < ApplicationController
     @admin = current_user.admin? if current_user
     # find_by_permalink! returns exception if no match
     @page = Page.find_by_permalink!(params[:id])
-    render :html => @page
   end
 
   # GET /pages/new
@@ -39,8 +38,8 @@ class PagesController < ApplicationController
   # PUT /pages/:permalink
   def update
     @page = Page.find_by_permalink!(params[:id])
-
-    if @page.update_attributes(params[:page])
+    update_params = PageParams.build params
+    if @page.update_attributes(update_params)
       redirect_to @page, notice: 'Page was successfully updated.'
     else
       render action: 'edit'
@@ -53,5 +52,15 @@ class PagesController < ApplicationController
     @page.destroy
 
     redirect_to pages_url
+  end
+  class PageParams
+    def self.build params
+      params.require(:page).permit(
+        :content,
+        :name,
+        :permalink,
+        :link_visible
+      )
+    end
   end
 end
