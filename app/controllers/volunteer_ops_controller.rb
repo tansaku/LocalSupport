@@ -67,7 +67,8 @@ class VolunteerOpsController < ApplicationController
                     'data-id' => org.id,
                     class: 'vol_op', title: "Click here to see volunteer opportunities at #{org.name}"]}
         ),
-        index: 'vol_op'
+        index: 1,
+        type: 'vol_op'
       )
     end
   end
@@ -76,8 +77,8 @@ class VolunteerOpsController < ApplicationController
     # set @organisation
     # then can make condition:
     # unless current_user.can_edit? organisation
-    unless org_owner? or admin?
-      flash[:error] = 'You must be signed in as an organisation owner or site admin to perform this action!'
+    unless org_owner? or superadmin?
+      flash[:error] = 'You must be signed in as an organisation owner or site superadmin to perform this action!'
       redirect_to '/' and return
     end
   end
