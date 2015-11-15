@@ -12,13 +12,19 @@ LocalSupport::Application.routes.draw do
   put '/user_reports/update' => 'user_reports#update', as: :user_report
   delete '/user_reports' => 'user_reports#destroy'
   get '/user_reports/invited' => 'user_reports#invited', as: :invited_users_report
+  get '/user_reports/deleted' => 'user_reports#deleted', as: :deleted_users_report
+  put 'user_reports/undo_delete/:id' => 'user_reports#undo_delete', as: :undo_delete_users_report
+  put 'user_reports/decline/:id' => 'user_reports#remove_pending_org_from_user', as: :decline_user_report
 
   resources :pages, only: [:index, :new, :create, :edit]
   resources :volunteer_ops, :only => [:index, :edit, :show, :update, :destroy]
+  resources :proposed_organisation_edits, :only => [:index]
   resources :organisations do
     resources :volunteer_ops, :only => [:new, :create]
+    resources :proposed_organisation_edits, :only => [:new, :show, :create, :update]
   end
   resources :users
+  resources :proposed_organisations, :only => [:new, :create, :show, :index, :update, :destroy]
 
   # so that static pages are linked directly instead of via /pages/:id
   get ':id', to: 'pages#show', as: :page

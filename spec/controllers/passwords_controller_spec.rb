@@ -1,19 +1,14 @@
 require 'rails_helper'
 
 describe Devise::PasswordsController, :type => :controller do
-  before :suite do
-    FactoryGirl.factories.clear
-    FactoryGirl.find_definitions
-  end
-
   describe "POST create" do
     before :each do
       request.env["devise.mapping"] = Devise.mappings[:user]
     end
     context "successful" do
       before :each do
-        FactoryGirl.create(:user)
-        post :create, 'user' => {'email' => 'jj@example.com'}
+        usr = FactoryGirl.create(:user)
+        post :create, 'user' => {'email' => usr.email}
       end
 
       it 'emails when user requests password for email in the system' do

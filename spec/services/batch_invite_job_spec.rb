@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 describe ::BatchInviteJob do
-  let(:current_user) { FactoryGirl.create(:user, email: 'admin@example.com', admin: true) }
+  let(:current_user) { FactoryGirl.create(:user, email: 'superadmin@example.com', superadmin: true) }
   let(:org) { FactoryGirl.create :organisation, email: 'YES@hello.com' }
   let(:params) do
     {invite_list: {org.id => org.email,
@@ -40,7 +40,7 @@ describe ::BatchInviteJob do
       expect(email.reply_to).to eq ['support@harrowcn.org.uk']
       expect(email.to).to eq [user.email]
       expect(email.cc).to eq ['technical@harrowcn.org.uk']
-      expect(email.subject).to eq 'Advertise volunteer opportunities on Harrow Community Network'
+      expect(email.subject).to eq 'Welcome to Harrow Community Network!'
     end
 
     it 'example response for invites with duplicates' do

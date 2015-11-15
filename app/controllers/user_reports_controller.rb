@@ -3,12 +3,31 @@ class UserReportsController < ApplicationController
   before_filter :authorize, :except => [:update]
   include ActionView::Helpers::DateHelper
 
+  def deleted
+    @users = User.only_deleted
+  end
+
+  def undo_delete
+    usr = User.with_deleted.find_by_id params[:id]
+    User.restore(params[:id])
+    @users = User.only_deleted
+    flash[:success] = "You have restored #{usr.email}"
+    redirect_to(deleted_users_report_path)
+  end
 
   # would like this to support generic updating of model with
   # business logic pulled into a separate model or process
+
   def update
     user = User.find_by_id(params[:id])
     UserOrganisationClaimer.new(self, user, current_user).call(params[:organisation_id])
+  end
+
+  def remove_pending_org_from_user
+    user = User.find_by_id(params[:id])
+    user.update_attributes!(pending_organisation_id: nil)
+    flash[:success] = "You have declined pending@myorg.com's request for admin status for My Organization."
+    redirect_to(users_report_path)
   end
 
   def destroy

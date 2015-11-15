@@ -1,10 +1,10 @@
 source 'http://rubygems.org'
 
 ruby '2.0.0'
-gem 'rails', '~> 4.1'
+gem 'rails', '~> 4.2.0'
 gem 'pg'
-gem 'devise', '3.0.3'
-gem 'devise_invitable', '~> 1.2.1'
+gem 'devise', '~> 3.4.0'
+gem 'devise_invitable', '~> 1.3.0'
 gem 'heroku-api'
 
 # Bundle edge Rails instead:
@@ -12,8 +12,7 @@ gem 'heroku-api'
 
 # for Heroku deployment - as described in Ap. A of ELLS book
 group :development, :test do
-  gem 'delorean'
-  gem 'metric_fu'
+  gem 'timecop'
   gem 'database_cleaner', '1.0.1'
   gem 'launchy'
   gem 'simplecov'
@@ -40,18 +39,19 @@ group :test do
   gem 'cucumber-rails', :require => false
   gem 'cucumber-rails-training-wheels'
   gem 'capybara', '2.4.1'
-  gem "capybara-webkit", "~> 1.1.0"
+  gem "capybara-webkit", "~> 1.6.0"
   gem 'factory_girl_rails', :require => false
   gem 'webmock', '1.20.0'
   gem 'uri-handler'
   gem 'selenium'
   gem 'selenium-client'
+  gem 'coveralls', require: false
 end
 
 group :production do
+  gem 'rails_12factor'
   gem 'newrelic_rpm'
 end
-
 
 gem 'coffee-rails', "4.1.0"
 gem 'uglifier', '2.5.3'
@@ -77,8 +77,6 @@ gem 'therubyracer'
 gem 'underscore-rails'
 gem 'geocoder'
 gem 'gmaps4rails', "2.1.2"
-#gem 'mongrel'
-gem 'kaminari'
 gem 'unicorn'
 
 # To use markdown in editing static pages

@@ -4,6 +4,7 @@
 # or operating system, you probably want to add a global ignore instead:
 #   git config --global core.excludesfile ~/.gitignore_global
 
+*.dump
 db/target_emails.csv
 cert_file
 *.txt
@@ -16,6 +17,7 @@ capybara-*.html
 /vendor/bundle
 vendor/assets/bower_components/
 /log/*
+/node_modules/
 /tmp/*
 /db/*.sqlite3
 /db/schema.rb
@@ -37,6 +39,7 @@ linecache19-0.5.13.gem
 db/email_test.csv
 config/database.yml
 .projectile
+/public/assets
 
 # ignore ruby version management stuff
 .rvmrc

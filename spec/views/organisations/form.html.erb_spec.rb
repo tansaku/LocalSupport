@@ -12,7 +12,7 @@ describe "organisations/_form.html.erb", :type => :view do
     @category6 = FactoryGirl.create(:category, name: "rabbit", charity_commission_id: 304)
     @organisation.categories << [@category1, @category3]
     @organisation.save!
-    render
+    render partial: 'form', locals: {org: @organisation}
   end
   it "renders form partial even for empty Organisation" do
     expect(rendered).not_to be_nil
@@ -28,7 +28,7 @@ describe "organisations/_form.html.erb", :type => :view do
             'organisation_description' => 'Enter organisation description',
             'organisation_website' => 'Enter organisation website url',
             'organisation_telephone' => 'Enter organisation phone number',
-            'organisation_admin_email_to_add' => "You may add an organisation administrator email here",
+            'organisation_superadmin_email_to_add' => "You may add an organisation administrator email here",
             'organisation_donation_info' => 'Enter organisation donation url'
     }
     hash.each do |label,placeholder|
@@ -37,19 +37,20 @@ describe "organisations/_form.html.erb", :type => :view do
   end
 
   it 'should have categories in scroll box ordered by type and name' do
-    expect(rendered).to have_xpath("//div/strong/em[text()='What you do']/../../following-sibling::div[1]/label[text()='alligator']")
-    expect(rendered).to have_xpath("//div/strong/em[text()='What you do']/../../following-sibling::div[2]/label[text()='capybara']")
-    expect(rendered).to have_xpath("//div/strong/em[text()='Who you help']/../../following-sibling::div[1]/label[text()='crocodile']")
-    expect(rendered).to have_xpath("//div/strong/em[text()='Who you help']/../../following-sibling::div[2]/label[text()='guinea pig']")
-    expect(rendered).to have_xpath("//div/strong/em[text()='How you help']/../../following-sibling::div[1]/label[text()='iguana']")
-    expect(rendered).to have_xpath("//div/strong/em[text()='How you help']/../../following-sibling::div[2]/label[text()='rabbit']")
+    expect(rendered).to have_xpath("//*[contains(., 'What you do')]/following::label[text()[contains(.,'alligator')]]")
+    expect(rendered).to have_xpath("//*[contains(., 'What you do')]/following::label[text()[contains(.,'capybara')]]")
+    expect(rendered).to have_xpath("//*[contains(., 'Who you help')]/following::label[text()[contains(.,'crocodile')]]")
+    expect(rendered).to have_xpath("//*[contains(., 'Who you help')]/following::label[text()[contains(.,'guinea pig')]]")
+    expect(rendered).to have_xpath("//*[contains(., 'How you help')]/following::label[text()[contains(.,'iguana')]]")
+    expect(rendered).to have_xpath("//*[contains(., 'How you help')]/following::label[text()[contains(.,'rabbit')]]")
   end
+
   it 'should have categories associated with organisation checked' do
     [@category1.name, @category3.name].each do |category|
-      expect(rendered).to have_xpath("//div/label[text()='#{category}']/preceding-sibling::input[1][@checked='checked']")
+      expect(rendered).to have_xpath("//label[text()[contains(.,'#{category}')]]/input[2][@checked='checked']")
     end
     [@category2.name, @category4.name,@category5.name,@category6.name].each do |category|
-      expect(rendered).not_to have_xpath("//div/label[text()='#{category}']/preceding-sibling::input[1][@checked='checked']")
+      expect(rendered).not_to have_xpath("//label[text()[contains(.,'#{category}')]]/input[2][@checked='checked']")
     end
   end
 end

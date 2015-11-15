@@ -4,7 +4,7 @@ FactoryGirl.define do
     name "friendly non profit"
     description "we are really really friendly"
     address "64 pinner road"
-    postcode "HA1 3TE"
+    postcode "HA1 4HZ"
     donation_info 'www.harrow-bereavment.co.uk/donate'
     email "friendly@charity.org"
     latitude 10
@@ -16,6 +16,39 @@ FactoryGirl.define do
         org.save!
       end
     end
+  end
+
+  factory :proposed_organisation_edit do
+
+  end
+
+  factory :proposed_organisation do
+    name "Friendly Charity"
+    description "We are friendly!"
+    address "64 pinner road"
+    postcode "HA1 4HZ"
+    donation_info "www.donate.org/friendly"
+    email "friendly@charity.org"
+    latitude 10
+    longitude 10
+    non_profit true
+    after(:build) do |proposed_org|
+      owner = FactoryGirl.create(:user)
+      proposed_org.users << owner
+      proposed_org.save!
+    end
+  end
+
+  factory :orphan_proposed_organisation, class: ProposedOrganisation do
+    name "Friendly Charity"
+    description "We are friendly!"
+    address "64 pinner road"
+    postcode "HA1 4HZ"
+    donation_info "www.donate.org/friendly"
+    email "friendly@charity.org"
+    latitude 10
+    longitude 10
+    non_profit true
   end
 
   factory :category do
@@ -32,10 +65,10 @@ FactoryGirl.define do
   end
 
   factory :user do
-    email "jj@example.com"
+    sequence(:email) { |n| "jj#{n}@example.com" }
     password "pppppppp"
     confirmed_at "2007-01-01 10:00:00"
-    admin false
+    superadmin false
     organisation nil
 
     factory :user_stubbed_organisation do

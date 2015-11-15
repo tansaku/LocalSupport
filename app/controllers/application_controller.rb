@@ -2,7 +2,9 @@ require 'custom_errors'
 
 class ApplicationController < ActionController::Base
   protect_from_forgery
-  before_filter :store_location, :assign_footer_page_links
+  before_filter :store_location,
+                :assign_footer_page_links
+
   include CustomErrors
 
   # To prevent infinite redirect loops, only requests from white listed
@@ -72,18 +74,18 @@ class ApplicationController < ActionController::Base
 
   private
 
-  # Enforces admin-only limits
+  # Enforces superadmin-only limits
   # http://railscasts.com/episodes/20-restricting-access
   def authorize
-    unless admin?
-      flash[:error] = t('authorize.admin')
+    unless superadmin?
+      flash[:error] = t('authorize.superadmin')
       redirect_to root_path
       false
     end
   end
 
-  def admin?
-    current_user.try :admin?
+  def superadmin?
+    current_user.try :superadmin?
   end
 
   def assign_footer_page_links
@@ -91,7 +93,7 @@ class ApplicationController < ActionController::Base
   end
 
   def set_flash_warning_reminder_to_update_details usr
-    if usr.organisation && usr.organisation.not_updated_recently?
+    if usr.organisation and not usr.organisation.has_been_updated_recently?
       msg = render_to_string(partial: "shared/call_to_action", locals: {org: usr.organisation}).html_safe
       if flash[:warning]
         flash[:warning] << msg

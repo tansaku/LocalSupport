@@ -1,7 +1,22 @@
-And /^I select the "(.*?)" category$/ do |category|
-  select(category, :from => "category[id]")
+
+And /^I select the "(.*?)" category from (How They Help|Who They Help|What They Do)$/ do |category, cat_type|
+  cat_id = case cat_type
+    when 'What They Do'
+      'what_id'
+    when 'How They Help'
+      'how_id'
+    when 'Who They Help'
+      'who_id'
+    else
+      raise "Unsupported category type"
+  end
+  select(category, :from => cat_id)
 end
 
+When /^I visit the proposed organisation show page for the proposed organisation that was proposed$/ do 
+  proposed_org = ProposedOrganisation.find_by(name: unsaved_proposed_organisation(User.first).name)
+  visit proposed_organisation_path(proposed_org)
+end
 When(/^I visit "(.*?)"$/) do |path|
   visit path
 end
@@ -12,7 +27,9 @@ def paths(location)
       'sign up' => new_user_registration_path,
       'sign in' => new_user_session_path,
       'organisations index' => organisations_path,
+      'proposed organisations index' => proposed_organisations_path,
       'new organisation' => new_organisation_path,
+      'new proposed organisation' => new_proposed_organisation_path,
       'contributors' => contributors_path,
       'password reset' => edit_user_password_path,
       'invitation' => accept_user_invitation_path,
@@ -20,8 +37,8 @@ def paths(location)
       'all users' => users_report_path,
       'invited users' => invited_users_report_path,
       'volunteer opportunities' => volunteer_ops_path,
-      'new organisation' => new_organisation_path,
-      'contributors' => contributors_path
+      'contributors' => contributors_path,
+      'deleted users' => deleted_users_report_path
   }[location]
 end
 
@@ -40,6 +57,19 @@ def find_record_for(object, schema, name)
   real_object = object.classify.constantize
   schema = schema.chomp('d').to_sym
   real_object.where(schema => name).first
+end
+
+Then /^I should be on the new organisation proposed edit page for the organisation named "(.*?)"$/ do |name|
+  org = Organisation.find_by_name(name)
+  url = new_organisation_proposed_organisation_edit_path org
+  current_path.should eq url
+end
+
+Then /^I should be on the show organisation proposed edit page for the organisation named "(.*?)"$/ do |name|
+  org = Organisation.find_by_name(name)
+  prop_ed = org.edits.first
+  url = organisation_proposed_organisation_edit_path org, prop_ed
+  current_path.should eq url
 end
 
 Then /^I (visit|should be on) the new volunteer op page for "(.*?)"$/ do |mode, name| 
@@ -176,5 +206,11 @@ Then(/^I should( not)? see the call to update details for organisation "(.*)"/) 
 
     within(negative.nil? ? 'div#flash_warning' : 'body') do
       page.send(expectation_method, have_link("here", :href => edit_organisation_path(org)))
+    end
+end
+Then(/^I should see an (active|inactive) home button in the header$/) do |active|
+    active_class = (active == "active") ? ".active" : "" 
+    within('.nav.nav-pills.pull-right') do
+      expect(page).to have_css("li#{active_class} > a[href='/']", :text => "Home")
     end
 end
