@@ -12,6 +12,11 @@
 //= require_tree ./global
 //= require bootstrap-switch
 //= require organisations
+//= require analytics
+//= require utilities
+//= require jquery-readyselector
+//= require doit_volunteer_ops
+//= require bootstrap-datepicker
 
 window.LocalSupport = {};
 
