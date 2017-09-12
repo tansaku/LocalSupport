@@ -26,6 +26,7 @@ test: &test
 
 production:
   <<: *dev
+  url: <%= ENV['DATABASE_URL'] %>
   database: ls_production
 
 cucumber:
